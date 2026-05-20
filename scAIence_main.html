@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>scAIence — Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #060e08;
+    --bg2: #0c1a0f;
+    --bg3: #111d14;
+    --bg4: #162019;
+    --bg5: #1c2a1f;
+    --green-mid: #2d5a1e;
+    --green: #639922;
+    --green-bright: #97C459;
+    --green-light: #C0DD97;
+    --green-pale: #EAF3DE;
+    --text-primary: #e8f0e0;
+    --text-secondary: #8aaa70;
+    --text-muted: #4a6040;
+    --border: rgba(99,153,34,0.15);
+    --border-bright: rgba(99,153,34,0.4);
+    --mono: 'DM Mono', monospace;
+    --sans: 'Sora', sans-serif;
+    --sidebar-w: 260px;
+    --topbar-h: 52px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-weight: 300;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    height: var(--topbar-h);
+    background: rgba(6,14,8,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 16px 0 0;
+    gap: 0;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .topbar-logo-area {
+    width: var(--sidebar-w);
+    padding: 0 16px;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    height: 100%;
+  }
+  .logo-icon {
+    width: 28px; height: 28px; background: var(--green-mid);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-text { font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--green-light); }
+  .logo-text em { color: var(--green-bright); font-style: normal; }
+  .topbar-center {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 0 20px;
+  }
+  .model-badge {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 12px; cursor: pointer;
+    transition: border-color 0.2s;
+    font-family: var(--mono); font-size: 12px; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden;
+  }
+  .model-badge:hover { border-color: var(--border-bright); }
+  .model-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-bright); animation: pulse-dot 2.5s ease-in-out infinite; flex-shrink: 0; }
+  .model-badge-sub { color: var(--text-muted); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 7px;
+    background: none; border: 1px solid transparent;
+    color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s;
+  }
+  .icon-btn:hover { background: var(--bg3); border-color: var(--border); color: var(--text-secondary); }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--green-mid); border: 1.5px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--green-bright); cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .avatar:hover { border-color: var(--green-bright); }
+
+  .menu-toggle {
+    display: none;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-secondary); cursor: pointer;
+    align-items: center; justify-content: center;
+    flex-shrink: 0; margin-right: 4px;
+    transition: all 0.18s;
+  }
+  .menu-toggle:hover { background: var(--bg3); color: var(--text-primary); }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .sidebar-top { padding: 12px; border-bottom: 1px solid var(--border); }
+  .new-chat-btn {
+    width: 100%;
+    background: var(--green-mid); border: 1px solid var(--green);
+    border-radius: 8px; padding: 8px 12px;
+    color: var(--green-pale); font-size: 12.5px; font-family: var(--sans);
+    font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: background 0.18s, box-shadow 0.18s;
+  }
+  .new-chat-btn:hover { background: var(--green); box-shadow: 0 3px 14px rgba(99,153,34,0.3); }
+  .sidebar-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  .sidebar-section { padding: 16px 12px 4px; }
+  .sidebar-section-label {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.8px;
+    text-transform: uppercase; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .sidebar-section-add {
+    width: 18px; height: 18px; border-radius: 4px;
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .sidebar-section-add:hover { background: var(--bg3); color: var(--green-bright); }
+
+  .project-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 10px; border-radius: 7px; cursor: pointer;
+    transition: background 0.15s; position: relative;
+    font-size: 12.5px; color: var(--text-secondary);
+    margin: 1px 0;
+  }
+  .project-item:hover { background: var(--bg3); color: var(--text-primary); }
+  .project-item.active { background: rgba(99,153,34,0.12); color: var(--text-primary); }
+  .project-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 2.5px; height: 60%; background: var(--green-bright); border-radius: 2px;
+  }
+  .project-icon { flex-shrink: 0; opacity: 0.7; }
+  .project-item.active .project-icon { opacity: 1; }
+  .project-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .project-badge {
+    font-family: var(--mono); font-size: 9px;
+    background: rgba(99,153,34,0.15); color: var(--green);
+    padding: 2px 6px; border-radius: 100px;
+    border: 1px solid rgba(99,153,34,0.25);
+    flex-shrink: 0;
+  }
+
+  .chat-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 7px 10px; border-radius: 7px; cursor: pointer;
+    transition: background 0.15s; margin: 1px 0;
+  }
+  .chat-item:hover { background: var(--bg3); }
+  .chat-item.active { background: rgba(99,153,34,0.10); }
+  .chat-item-icon { flex-shrink: 0; padding-top: 1px; opacity: 0.5; }
+  .chat-item-body { flex: 1; min-width: 0; }
+  .chat-item-title { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-item.active .chat-item-title { color: var(--text-primary); }
+  .chat-item-meta { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  .sidebar-footer {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sidebar-footer-btn {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 10px; border-radius: 7px; cursor: pointer;
+    font-size: 12px; color: var(--text-muted);
+    transition: all 0.15s; background: none; border: none; width: 100%; text-align: left;
+  }
+  .sidebar-footer-btn:hover { background: var(--bg3); color: var(--text-secondary); }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; position: relative;
+    background: var(--bg);
+  }
+  .main::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(99,153,34,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,153,34,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── WELCOME STATE ── */
+  .welcome-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 14px 20px 0;
+    position: relative; z-index: 1;
+    overflow-y: auto;
+  }
+  .welcome-title {
+    font-size: clamp(20px, 2.6vw, 28px); font-weight: 600;
+    text-align: center; letter-spacing: -0.8px; line-height: 1.2;
+    margin-bottom: 8px;
+    animation: fadeUp 0.4s ease 0.05s both;
+  }
+  .welcome-title em { color: var(--green-bright); font-style: normal; }
+  .welcome-sub {
+    font-size: 12.5px; color: var(--text-secondary); text-align: center;
+    max-width: 440px; line-height: 1.55;
+    margin-bottom: 16px;
+    animation: fadeUp 0.4s ease 0.1s both;
+  }
+
+  .suggestion-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px; width: 100%; max-width: 640px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.4s ease 0.15s both;
+  }
+  .suggestion-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 13px; cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, background 0.2s;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .suggestion-card:hover { border-color: var(--border-bright); transform: translateY(-1px); background: var(--bg4); }
+  .sug-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: rgba(99,153,34,0.1); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sug-body { flex: 1; min-width: 0; }
+  .sug-title { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 1px; }
+  .sug-desc { font-size: 10.5px; color: var(--text-muted); line-height: 1.3; }
+
+  .cap-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    justify-content: center; max-width: 640px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.4s ease 0.2s both;
+  }
+  .cap-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 100px; padding: 4px 11px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-secondary);
+    cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  }
+  .cap-chip:hover { border-color: var(--green); color: var(--green-bright); background: rgba(99,153,34,0.08); }
+  .cap-chip svg { opacity: 0.7; flex-shrink: 0; }
+  .cap-chip:hover svg { opacity: 1; }
+
+  /* ── CHAT STATE ── */
+  .chat-state {
+    flex: 1; overflow-y: auto; padding: 24px 0 8px;
+    position: relative; z-index: 1; display: none;
+  }
+  .chat-state::-webkit-scrollbar { width: 4px; }
+  .chat-state::-webkit-scrollbar-track { background: transparent; }
+  .chat-state::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+  .chat-state.active { display: block; }
+
+  .msg-wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+  .msg { display: flex; gap: 12px; margin-bottom: 24px; animation: fadeUp 0.3s ease both; }
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    margin-top: 2px;
+  }
+  .msg-avatar.user { background: var(--green-mid); border: 1.5px solid var(--green); color: var(--green-bright); }
+  .msg-avatar.ai { background: var(--bg3); border: 1.5px solid var(--border-bright); color: var(--green-bright); }
+  .msg-content { flex: 1; min-width: 0; }
+  .msg-name { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .msg-name.ai-name { color: var(--green); }
+  .msg-bubble { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); }
+  .msg-bubble.user-bubble {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px 12px 4px 12px;
+    padding: 11px 15px; color: var(--text-primary); display: inline-block;
+  }
+  .msg-bubble p { margin-bottom: 8px; }
+  .msg-bubble p:last-child { margin-bottom: 0; }
+  .msg-bubble ul { padding-left: 18px; margin: 6px 0; }
+  .msg-bubble ul li { margin-bottom: 4px; }
+  .msg-bubble strong { color: var(--text-primary); font-weight: 500; }
+  .msg-bubble code {
+    font-family: var(--mono); font-size: 12px;
+    background: rgba(99,153,34,0.1); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px; color: var(--green-bright);
+  }
+
+  .question-list {
+    background: var(--bg3); border: 1px solid var(--border-bright);
+    border-radius: 10px; padding: 14px 16px; margin-top: 10px;
+    border-left: 3px solid var(--green);
+  }
+  .question-list-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--green); margin-bottom: 10px;
+  }
+  .question-item { display: flex; gap: 10px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); }
+  .question-item:last-child { margin-bottom: 0; }
+  .question-num { font-family: var(--mono); font-size: 11px; color: var(--green); flex-shrink: 0; padding-top: 1px; min-width: 20px; }
+
+  .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 14px 16px; }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    animation: typing-bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ── INPUT AREA ── */
+  .input-area {
+    padding: 10px 20px 14px; position: relative; z-index: 10;
+    background: linear-gradient(to bottom, transparent, var(--bg) 30%);
+  }
+  .input-area-inner { max-width: 720px; margin: 0 auto; }
+  .input-box {
+    background: var(--bg3); border: 1.5px solid var(--border-bright);
+    border-radius: 14px; padding: 10px 12px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-box:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(99,153,34,0.1), 0 4px 32px rgba(0,0,0,0.4);
+  }
+  .input-row { display: flex; align-items: flex-end; gap: 10px; }
+  .input-icon-lab { flex-shrink: 0; padding-bottom: 2px; opacity: 0.5; }
+  .chat-textarea {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text-primary); font-size: 13.5px;
+    font-family: var(--sans); font-weight: 300;
+    resize: none; line-height: 1.55; min-height: 22px; max-height: 160px;
+    overflow-y: auto;
+  }
+  .chat-textarea::placeholder { color: var(--text-muted); }
+  .chat-textarea::-webkit-scrollbar { width: 3px; }
+  .chat-textarea::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+  .send-btn {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: var(--green); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+    color: var(--bg);
+  }
+  .send-btn:hover { background: var(--green-bright); box-shadow: 0 3px 14px rgba(99,153,34,0.4); }
+  .send-btn:active { transform: scale(0.95); }
+  .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .input-chips-row { display: flex; align-items: center; gap: 7px; margin-top: 8px; flex-wrap: wrap; }
+  .input-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--bg4); border: 1px solid var(--border);
+    border-radius: 100px; padding: 4px 10px;
+    font-family: var(--mono); font-size: 10.5px; color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .input-chip:hover { border-color: var(--green); color: var(--green-bright); }
+  .input-chip svg { flex-shrink: 0; }
+  .input-chips-spacer { flex: 1; }
+  .input-meta {
+    font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  }
+  .input-meta span { color: var(--green); }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+  @keyframes typing-bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+  @media (max-width: 720px) {
+    .menu-toggle { display: flex; }
+    .icon-btn { display: none; }
+    .topbar-logo-area { border-right: none; width: auto; }
+    /* Compact badge on mobile: hide subtitle, shrink */
+    .topbar-center { flex: 0 0 auto; padding: 0 8px; }
+    .model-badge { padding: 4px 9px; font-size: 11px; gap: 5px; }
+    .model-badge-sub { display: none; }
+    .model-badge svg { display: none; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 300;
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+      width: min(var(--sidebar-w), 82vw); box-shadow: none;
+    }
+    .sidebar.open { transform: translateX(0); box-shadow: 6px 0 40px rgba(0,0,0,0.6); }
+    .welcome-state { justify-content: flex-start; padding: 16px 14px 0; overflow-y: auto; }
+    .suggestion-grid { grid-template-columns: 1fr; max-width: 100%; }
+    .welcome-title { font-size: clamp(18px, 5.5vw, 24px); }
+    .welcome-sub { font-size: 12px; margin-bottom: 12px; }
+    .cap-row { gap: 5px; max-width: 100%; margin-bottom: 12px; }
+    .cap-chip { font-size: 10px; padding: 3px 9px; }
+    .msg-wrap { padding: 0 12px; }
+    .msg-bubble { font-size: 13px; }
+    .input-area { padding: 8px 10px 12px; }
+    .chat-textarea { font-size: 13px; }
+    .input-meta { display: none; }
+    .input-chip:nth-child(n+4) { display: none; }
+  }
+  @media (max-width: 380px) {
+    .welcome-title { font-size: 17px; }
+    .model-badge { font-size: 10px; }
+    .model-dot { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()" title="Menu">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <div class="topbar-logo-area">
+    <div class="logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0DD97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/>
+        <path d="m17 6-2.5 2.5"/><path d="m14 8.5-1.5 1.5"/><path d="m7 18 2.5-2.5"/><path d="m3.5 14.5 1.5-1.5"/>
+      </svg>
+    </div>
+    <span class="logo-text">sc<em>AI</em>ence</span>
+  </div>
+  <div class="topbar-center">
+    <div class="model-badge">
+      <div class="model-dot"></div>
+      scAIence Pro<span class="model-badge-sub"> · literature-trained</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" title="Keyboard shortcuts">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+    </button>
+    <button class="icon-btn" title="Notifications">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <div class="avatar" title="User">US</div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <button class="new-chat-btn" onclick="resetToWelcome(); closeSidebar();">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New experiment
+      </button>
+    </div>
+
+    <div class="sidebar-scroll">
+
+      <!-- PROJECTS -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">
+          Projects
+          <button class="sidebar-section-add" title="New project">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="project-item active" onclick="setProject(this); closeSidebar();">
+          <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          <span class="project-name">Neurodegenerative disease models</span>
+          <span class="project-badge">active</span>
+        </div>
+        <div class="project-item" onclick="setProject(this); closeSidebar();">
+          <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          <span class="project-name">Tumor microenvironment</span>
+        </div>
+        <div class="project-item" onclick="setProject(this); closeSidebar();">
+          <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          <span class="project-name">CRISPR base editing</span>
+        </div>
+        <div class="project-item" onclick="setProject(this); closeSidebar();">
+          <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          <span class="project-name">Single-cell RNA sequencing</span>
+        </div>
+        <div class="project-item" onclick="setProject(this); closeSidebar();">
+          <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          <span class="project-name">Structural proteomics</span>
+        </div>
+      </div>
+
+      <!-- RECENT EXPERIMENTS -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Recent</div>
+
+        <div class="chat-item active" onclick="loadChat(this, 'pcr'); closeSidebar();">
+          <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="chat-item-body">
+            <div class="chat-item-title">RT-qPCR primer design — TP53</div>
+            <div class="chat-item-meta">Today · Primer design</div>
+          </div>
+        </div>
+        <div class="chat-item" onclick="loadChat(this, 'crispr'); closeSidebar();">
+          <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="chat-item-body">
+            <div class="chat-item-title">sgRNA design for BRCA1 exon 11</div>
+            <div class="chat-item-meta">Yesterday · CRISPR / oligo design</div>
+          </div>
+        </div>
+        <div class="chat-item" onclick="loadChat(this, 'western'); closeSidebar();">
+          <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="chat-item-body">
+            <div class="chat-item-title">Western blot background troubleshoot</div>
+            <div class="chat-item-meta">2 days ago · Troubleshooting</div>
+          </div>
+        </div>
+        <div class="chat-item" onclick="loadChat(this, 'calc'); closeSidebar();">
+          <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="chat-item-body">
+            <div class="chat-item-title">Lentiviral titer & MOI calculation</div>
+            <div class="chat-item-meta">3 days ago · Lab calculations</div>
+          </div>
+        </div>
+        <div class="chat-item">
+          <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="chat-item-body">
+            <div class="chat-item-title">HEK293 transfection optimization</div>
+            <div class="chat-item-meta">5 days ago · Protocol design</div>
+          </div>
+        </div>
+        <div class="chat-item">
+          <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8aaa70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="chat-item-body">
+            <div class="chat-item-title">Flow panel — T cell exhaustion markers</div>
+            <div class="chat-item-meta">1 week ago · Experimental design</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Settings
+      </button>
+      <button class="sidebar-footer-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Help & docs
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- WELCOME STATE -->
+    <div class="welcome-state" id="welcome-state">
+      <h1 class="welcome-title">What will you <em>design</em> today?</h1>
+      <p class="welcome-sub">
+        Ask me anything about your experiment — I'll ask the right questions first, then give you a rigorous, literature-grounded answer.
+      </p>
+
+      <div class="suggestion-grid">
+        <div class="suggestion-card" onclick="startChat('Design a CRISPR-Cas9 protocol to knock out TP53 in HCT116 human colorectal cancer cells')">
+          <div class="sug-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg>
+          </div>
+          <div class="sug-body">
+            <div class="sug-title">CRISPR knockout protocol</div>
+            <div class="sug-desc">Design sgRNAs and editing strategy for cell line models</div>
+          </div>
+        </div>
+        <div class="suggestion-card" onclick="startChat('My Western blot shows high background and non-specific bands. Help me troubleshoot.')">
+          <div class="sug-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div class="sug-body">
+            <div class="sug-title">Troubleshoot results</div>
+            <div class="sug-desc">Systematic diagnosis of experimental issues</div>
+          </div>
+        </div>
+        <div class="suggestion-card" onclick="startChat('Design RT-qPCR primers for TP53, MDM2 and CDKN1A in human cell lines')">
+          <div class="sug-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="sug-body">
+            <div class="sug-title">RT-qPCR primer design</div>
+            <div class="sug-desc">Tm, GC%, off-target and amplicon size included</div>
+          </div>
+        </div>
+        <div class="suggestion-card" onclick="startChat('Calculate lentiviral MOI and volume needed to transduce 500,000 HEK293T cells at MOI 5')">
+          <div class="sug-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+          </div>
+          <div class="sug-body">
+            <div class="sug-title">Lab calculations</div>
+            <div class="sug-desc">MOI, dilutions, buffer and reagent recipes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAPABILITY CHIPS -->
+      <div class="cap-row">
+        <div class="cap-chip" onclick="fillPrompt('Protocol design: ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Protocol design
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Design primers for ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/></svg>
+          Primer design
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Troubleshoot: ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Troubleshooting
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Design sgRNAs for CRISPR knockout of ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg>
+          CRISPR / editing
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Cell biology experiment: ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="10"/></svg>
+          Cell biology
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Analyze flow cytometry data: ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Flow cytometry
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Calculate ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+          Lab calculations
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Design Western blot protocol for ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+          Western blot
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Protocol adaptation: ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Protocol adaptation
+        </div>
+        <div class="cap-chip" onclick="fillPrompt('Experimental design for ')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Experimental design
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT STATE -->
+    <div class="chat-state" id="chat-state">
+      <div class="msg-wrap" id="messages"></div>
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="input-area">
+      <div class="input-area-inner">
+        <div class="input-box">
+          <div class="input-row">
+            <div class="input-icon-lab">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#639922" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 9H8L9 3z"/><path d="M8 12c-2 2-3 4-2 7a4 4 0 0 0 4 2h4a4 4 0 0 0 4-2c1-3 0-5-2-7"/></svg>
+            </div>
+            <textarea
+              class="chat-textarea"
+              id="chat-input"
+              rows="1"
+              placeholder="e.g. Design a Western blot protocol for detecting phospho-ERK in HeLa cells..."
+            ></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+          <div class="input-chips-row">
+            <div class="input-chip" onclick="fillPrompt('Design a protocol for ')" title="Protocol design">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+              Protocol
+            </div>
+            <div class="input-chip" onclick="fillPrompt('Design primers for ')" title="Primer design">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/></svg>
+              Primers
+            </div>
+            <div class="input-chip" onclick="fillPrompt('Troubleshoot: ')" title="Troubleshoot">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Troubleshoot
+            </div>
+            <div class="input-chip" onclick="fillPrompt('Calculate ')" title="Lab calculations">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+              Calculate
+            </div>
+            <div class="input-chip" onclick="fillPrompt('Design sgRNAs for ')" title="CRISPR">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/></svg>
+              CRISPR
+            </div>
+            <div class="input-chips-spacer"></div>
+            <div class="input-meta">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>PubMed</span> · <span>Primer3</span> · <span>NCBI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const textarea = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+const messagesEl = document.getElementById('messages');
+const welcomeState = document.getElementById('welcome-state');
+const chatState = document.getElementById('chat-state');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+textarea.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+});
+textarea.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+function toggleSidebar() {
+  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+}
+function openSidebar() {
+  sidebar.classList.add('open');
+  sidebarOverlay.classList.add('open');
+}
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('open');
+}
+
+function fillPrompt(text) {
+  textarea.value = text;
+  textarea.focus();
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+function setProject(el) {
+  document.querySelectorAll('.project-item').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+let inChat = false;
+
+function showChatState() {
+  welcomeState.style.display = 'none';
+  chatState.classList.add('active');
+  inChat = true;
+}
+
+function resetToWelcome() {
+  welcomeState.style.display = '';
+  chatState.classList.remove('active');
+  messagesEl.innerHTML = '';
+  textarea.value = '';
+  textarea.style.height = 'auto';
+  inChat = false;
+  document.querySelectorAll('.chat-item').forEach(c => c.classList.remove('active'));
+}
+
+function addMessage(role, html) {
+  const isAI = role === 'ai';
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.innerHTML = `
+    <div class="msg-avatar ${isAI ? 'ai' : 'user'}">
+      ${isAI
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg>`
+        : 'US'}
+    </div>
+    <div class="msg-content">
+      <div class="msg-name ${isAI ? 'ai-name' : ''}">${isAI ? 'scAIence' : 'User'}</div>
+      <div class="msg-bubble ${isAI ? '' : 'user-bubble'}">${html}</div>
+    </div>
+  `;
+  messagesEl.appendChild(div);
+  chatState.scrollTop = chatState.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg'; div.id = 'typing-msg';
+  div.innerHTML = `
+    <div class="msg-avatar ai">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#97C459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg>
+    </div>
+    <div class="msg-content">
+      <div class="msg-name ai-name">scAIence</div>
+      <div class="msg-bubble">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(div);
+  chatState.scrollTop = chatState.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-msg');
+  if (t) t.remove();
+}
+
+const aiResponses = {
+  default_protocol: `<p>Before I design this protocol, I need to gather some details to tailor it precisely to your setup. I'll ask a few targeted questions first.</p>
+    <div class="question-list">
+      <div class="question-list-title">⟶ Clarification questions</div>
+      <div class="question-item"><span class="question-num">01</span><span><strong>Cell line & origin:</strong> Which cell line are you working with? Is it adherent or suspension culture?</span></div>
+      <div class="question-item"><span class="question-num">02</span><span><strong>Passage & culture conditions:</strong> What passage number are your cells at, and what base medium and serum concentration are you using?</span></div>
+      <div class="question-item"><span class="question-num">03</span><span><strong>Delivery method:</strong> Are you planning to use lipofection, electroporation, or lentiviral delivery for the CRISPR components?</span></div>
+      <div class="question-item"><span class="question-num">04</span><span><strong>Selection strategy:</strong> Will you use antibiotic selection, FACS sorting, or single-cell cloning to isolate edited cells?</span></div>
+      <div class="question-item"><span class="question-num">05</span><span><strong>Validation endpoint:</strong> How do you plan to confirm knockout — surveyor assay, Sanger sequencing, ICE analysis, or Western blot?</span></div>
+    </div>`,
+
+  default_primer: `<p>Great — I'll design RT-qPCR primers optimized for your targets. A few things to confirm before I run the design:</p>
+    <div class="question-list">
+      <div class="question-list-title">⟶ Clarification questions</div>
+      <div class="question-item"><span class="question-num">01</span><span><strong>Species:</strong> Are these human (<em>Homo sapiens</em>) sequences? I'll pull from NCBI RefSeq accordingly.</span></div>
+      <div class="question-item"><span class="question-num">02</span><span><strong>Application:</strong> Is this for expression quantification (RT-qPCR) or genomic detection (gDNA)? This affects whether I span an exon-exon junction.</span></div>
+      <div class="question-item"><span class="question-num">03</span><span><strong>Amplicon size preference:</strong> Standard qPCR amplicons are 80–150 bp — any constraint on your end?</span></div>
+      <div class="question-item"><span class="question-num">04</span><span><strong>Tm target:</strong> Do you have a preferred annealing temperature range (default: 58–62°C)?</span></div>
+      <div class="question-item"><span class="question-num">05</span><span><strong>Reference genes:</strong> Which housekeepers are you using — <code>GAPDH</code>, <code>ACTB</code>, <code>HPRT1</code>? I can also design those primers if needed.</span></div>
+    </div>`,
+
+  default_troubleshoot: `<p>Let's work through this systematically. Western blot issues can have many causes — I'll need a clearer picture of your setup before proposing a diagnosis.</p>
+    <div class="question-list">
+      <div class="question-list-title">⟶ Clarification questions</div>
+      <div class="question-item"><span class="question-num">01</span><span><strong>Background type:</strong> Is the background diffuse across the whole membrane, or concentrated in specific regions (e.g. around the ladder, near the target band)?</span></div>
+      <div class="question-item"><span class="question-num">02</span><span><strong>Antibody details:</strong> What primary antibody are you using, at what dilution, and in what blocking buffer (BSA vs. milk)?</span></div>
+      <div class="question-item"><span class="question-num">03</span><span><strong>Blocking conditions:</strong> How long did you block, and at what temperature?</span></div>
+      <div class="question-item"><span class="question-num">04</span><span><strong>Wash steps:</strong> How many washes did you perform after primary and secondary, and with what buffer (TBS-T or PBS-T)?</span></div>
+      <div class="question-item"><span class="question-num">05</span><span><strong>Detection method:</strong> Are you using ECL, fluorescence (e.g. LI-COR), or another detection system?</span></div>
+    </div>`,
+
+  default_calc: `<p>Sure — I'll walk you through the full calculation. A few inputs first so the numbers are exact for your setup:</p>
+    <div class="question-list">
+      <div class="question-list-title">⟶ Clarification questions</div>
+      <div class="question-item"><span class="question-num">01</span><span><strong>Viral titer:</strong> What is the titer of your lentiviral stock (TU/mL or IU/mL)? This should be on the production datasheet.</span></div>
+      <div class="question-item"><span class="question-num">02</span><span><strong>Target MOI:</strong> What multiplicity of infection are you aiming for (e.g. MOI 1, 5, or 10)?</span></div>
+      <div class="question-item"><span class="question-num">03</span><span><strong>Cell number:</strong> How many cells will you transduce per well/plate? I'll calculate volume accordingly.</span></div>
+      <div class="question-item"><span class="question-num">04</span><span><strong>Polybrene:</strong> Will you use polybrene or other transduction enhancers? This affects the final volume calculation.</span></div>
+    </div>`,
+};
+
+function getAIResponse(userText) {
+  const t = userText.toLowerCase();
+  if (t.includes('crispr') || t.includes('knockout') || t.includes('sgrna') || t.includes('knock out')) return aiResponses.default_protocol;
+  if (t.includes('primer') || t.includes('qpcr') || t.includes('rt-qpcr') || t.includes('pcr')) return aiResponses.default_primer;
+  if (t.includes('troubleshoot') || t.includes('background') || t.includes('western') || t.includes('problem') || t.includes('non-specific')) return aiResponses.default_troubleshoot;
+  if (t.includes('calculat') || t.includes('moi') || t.includes('titer') || t.includes('lentiviral') || t.includes('dilution')) return aiResponses.default_calc;
+  return `<p>Understood. Before I give you a precise answer, I need a few more details about your experimental context.</p>
+    <div class="question-list">
+      <div class="question-list-title">⟶ Clarification questions</div>
+      <div class="question-item"><span class="question-num">01</span><span><strong>Cell/organism:</strong> What cell type or organism are you working with?</span></div>
+      <div class="question-item"><span class="question-num">02</span><span><strong>Current protocol:</strong> Are you starting from scratch or adapting an existing method?</span></div>
+      <div class="question-item"><span class="question-num">03</span><span><strong>Equipment available:</strong> What key instruments and reagents do you have on hand?</span></div>
+      <div class="question-item"><span class="question-num">04</span><span><strong>Goal:</strong> What is the final readout or experimental endpoint you're aiming for?</span></div>
+    </div>`;
+}
+
+function sendMessage() {
+  const text = textarea.value.trim();
+  if (!text) return;
+  if (!inChat) showChatState();
+  addMessage('user', text);
+  textarea.value = '';
+  textarea.style.height = 'auto';
+  addTyping();
+  sendBtn.disabled = true;
+  setTimeout(() => {
+    removeTyping();
+    addMessage('ai', getAIResponse(text));
+    sendBtn.disabled = false;
+    chatState.scrollTop = chatState.scrollHeight;
+  }, 1400 + Math.random() * 600);
+}
+
+function startChat(text) {
+  textarea.value = text;
+  sendMessage();
+}
+
+function loadChat(el, type) {
+  document.querySelectorAll('.chat-item').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (!inChat) showChatState();
+  messagesEl.innerHTML = '';
+
+  const demos = {
+    pcr: [
+      { role: 'user', html: 'Design RT-qPCR primers for TP53, MDM2 and CDKN1A in human HCT116 cells.' },
+      { role: 'ai', html: aiResponses.default_primer },
+      { role: 'user', html: 'Human sequences, RT-qPCR for expression quantification, amplicon 80–120 bp, Tm 60°C. Housekeeping gene: GAPDH.' },
+      { role: 'ai', html: `<p>Perfect — here are your optimized primer sets, all spanning exon-exon junctions to exclude genomic DNA amplification.</p>
+        <p><strong>Primer sets for TP53, MDM2, CDKN1A and GAPDH (human, RT-qPCR)</strong></p>
+        <ul>
+          <li><strong>TP53</strong> — Fwd: <code>5′-CAGCACATGACGGAGGTTGT-3′</code> / Rev: <code>5′-TCATCCAAATACTCCACACGC-3′</code> · 104 bp · Tm 60.2°C · GC 50%</li>
+          <li><strong>MDM2</strong> — Fwd: <code>5′-GGATCTACTGATTGGTTGGATCC-3′</code> / Rev: <code>5′-CTGATCCAACCAATCAGTATCC-3′</code> · 98 bp · Tm 59.8°C · GC 47%</li>
+          <li><strong>CDKN1A (p21)</strong> — Fwd: <code>5′-TGTCCGTCAGAACCCATGC-3′</code> / Rev: <code>5′-AAAGTCGAAGTTCCATCGCTC-3′</code> · 112 bp · Tm 60.4°C · GC 52%</li>
+          <li><strong>GAPDH</strong> — Fwd: <code>5′-GTCTCCTCTGACTTCAACAGCG-3′</code> / Rev: <code>5′-ACCACCCTGTTGCTGTAGCCAA-3′</code> · 131 bp · Tm 60.1°C · GC 54%</li>
+        </ul>
+        <p><em>All primers designed with Primer3 v4.0, verified against NCBI RefSeq (hg38). Off-target BLAST check completed — no significant secondary hits.</em></p>` }
+    ],
+    crispr: [
+      { role: 'user', html: 'I need to design sgRNAs for TP53 knockout in HCT116 human colorectal cancer cells using CRISPR-Cas9.' },
+      { role: 'ai', html: aiResponses.default_protocol }
+    ],
+    western: [
+      { role: 'user', html: 'My Western blot for phospho-ERK shows high diffuse background and a smear around 44/42 kDa instead of clean bands.' },
+      { role: 'ai', html: aiResponses.default_troubleshoot }
+    ],
+    calc: [
+      { role: 'user', html: 'Calculate lentiviral volume needed to transduce 500,000 HEK293T cells at MOI 5. My stock titer is 1×10⁸ TU/mL.' },
+      { role: 'ai', html: `<p>Here is the full calculation for your transduction:</p>
+        <ul>
+          <li><strong>Required TU:</strong> 500,000 cells × MOI 5 = <code>2.5 × 10⁶ TU</code></li>
+          <li><strong>Viral volume needed:</strong> 2.5 × 10⁶ TU ÷ 1 × 10⁸ TU/mL = <code>25 µL</code></li>
+          <li><strong>Polybrene:</strong> Add polybrene to a final concentration of <code>8 µg/mL</code> in the transduction volume.</li>
+          <li><strong>Total transduction volume:</strong> Typically 500 µL per well of a 24-well plate — add 25 µL virus + 475 µL complete medium + polybrene.</li>
+          <li><strong>After 24 h:</strong> Replace with fresh medium. Begin antibiotic selection (e.g. puromycin 1–2 µg/mL) at 48 h post-transduction.</li>
+        </ul>
+        <p><em>Tip: Include an untransduced control well to monitor antibiotic kill curve. Cell death should be complete within 3–5 days for HEK293T.</em></p>` }
+    ]
+  };
+
+  const msgs = demos[type] || demos.pcr;
+  msgs.forEach(m => addMessage(m.role, m.html));
+  chatState.scrollTop = chatState.scrollHeight;
+}
+</script>
+</body>
+</html>
