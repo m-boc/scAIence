@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>scAIence Lab — Pro Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  /* ── DARK MODE — alto contraste ── */
+  --bg:#030a05;--bg2:#0b1d0f;--bg3:#112517;--bg4:#182f1e;--bg5:#1f3a26;
+  --green-mid:#2d5a1e;--green:#639922;--green-bright:#97C459;
+  --green-light:#d0ea9e;--green-pale:#EAF3DE;
+  --text-primary:#f7fdf2;--text-secondary:#cde3a4;--text-muted:#8aaf6c;
+  --border:rgba(99,153,34,0.22);--border-bright:rgba(99,153,34,0.55);
+  --gold:#e0b52e;--gold-dim:rgba(224,181,46,0.14);
+  --shadow:rgba(0,0,0,0.55);
+  --mono:'DM Mono',monospace;--sans:'Sora',sans-serif;
+  --sidebar-w:270px;--topbar-h:52px;--panel-w:310px;
+}
+/* ── LIGHT MODE — verde salvia, alto contraste ── */
+[data-theme="light"]{
+  --bg:#dff0c8;--bg2:#d0eab4;--bg3:#bfe09e;--bg4:#aed488;--bg5:#9dc872;
+  --green-mid:#4a8820;--green:#2e6610;--green-bright:#1e5008;
+  --green-light:#143806;--green-pale:#0c2404;
+  --text-primary:#071503;--text-secondary:#163808;--text-muted:#315e18;
+  --border:rgba(30,70,5,0.25);--border-bright:rgba(30,70,5,0.52);
+  --gold:#5c4106;--gold-dim:rgba(92,65,6,0.14);
+  --shadow:rgba(0,0,0,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text-primary);font-family:var(--sans);font-weight:300;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{height:var(--topbar-h);background:var(--bg2);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px 0 0;flex-shrink:0;z-index:100}
+.topbar-logo-area{width:var(--sidebar-w);padding:0 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-right:1px solid var(--border);height:100%;cursor:pointer}
+.logo-icon{width:28px;height:28px;background:var(--green-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-text{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--green-light)}
+.logo-text em{color:var(--green-bright);font-style:normal}
+.pro-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;background:var(--gold-dim);color:var(--gold);border:1px solid var(--border-bright);border-radius:100px;padding:2px 8px;text-transform:uppercase;flex-shrink:0}
+.topbar-center{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 20px}
+.model-badge{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--text-secondary);white-space:nowrap;transition:border-color .2s}
+.model-badge:hover{border-color:var(--border-bright)}
+.model-dot{width:7px;height:7px;border-radius:50%;background:var(--green-bright);animation:pulse-dot 2.5s ease-in-out infinite;flex-shrink:0}
+.model-badge-sub{color:var(--text-muted)}
+.lab-ctx{display:flex;align-items:center;gap:7px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-family:var(--mono);font-size:11px;color:var(--text-muted);cursor:pointer;transition:border-color .2s}
+.lab-ctx:hover{border-color:var(--gold);color:var(--gold)}
+.lab-ctx-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{width:32px;height:32px;border-radius:7px;background:none;border:1px solid transparent;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.icon-btn:hover{background:var(--bg3);border-color:var(--border);color:var(--text-secondary)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--green-mid);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--green-bright);cursor:pointer}
+.menu-toggle{display:none;width:36px;height:36px;border-radius:8px;background:none;border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;backdrop-filter:blur(2px)}
+.sidebar-overlay.open{display:block}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-top{padding:12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+.new-chat-btn{width:100%;background:var(--green-mid);border:1px solid var(--green);border-radius:8px;padding:8px 12px;color:var(--green-pale);font-size:12.5px;font-family:var(--sans);font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .18s,box-shadow .18s}
+.new-chat-btn:hover{background:var(--green);box-shadow:0 3px 14px rgba(99,153,34,.3)}
+.inventory-btn{width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text-muted);font-size:11.5px;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .18s}
+.inventory-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.connectors-btn{width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text-muted);font-size:11.5px;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .18s}
+.connectors-btn:hover{border-color:var(--green);color:var(--green-bright);background:rgba(99,153,34,.08)}
+.connectors-btn .conn-dot{width:5px;height:5px;border-radius:50%;background:var(--green-bright);box-shadow:0 0 5px var(--green-bright);flex-shrink:0}
+.sb-projects-nav{width:100%;background:var(--bg3);border:1px solid var(--border-bright);border-radius:8px;padding:7px 12px;color:var(--text-secondary);font-size:11.5px;font-family:var(--sans);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .18s;margin-bottom:6px}
+.sb-projects-nav:hover{background:var(--bg4);border-color:var(--green);color:var(--text-primary)}
+.sb-projects-nav svg{flex-shrink:0;color:var(--green-bright)}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:8px 0}
+.sidebar-scroll::-webkit-scrollbar{width:4px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+.sidebar-section{padding:16px 12px 4px}
+.sidebar-section-label{font-family:var(--mono);font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sb-label-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;padding:0;transition:color .15s;display:flex;align-items:center;gap:5px}
+.sb-label-btn:hover{color:var(--green-bright)}
+.sb-add{width:18px;height:18px;border-radius:4px;background:none;border:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.sb-add:hover{background:var(--bg3);color:var(--green-bright)}
+.project-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:background .15s;position:relative;font-size:12.5px;color:var(--text-secondary);margin:1px 0}
+.project-item:hover{background:var(--bg3);color:var(--text-primary)}
+.project-item.active{background:rgba(99,153,34,.12);color:var(--text-primary)}
+.project-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:60%;background:var(--green-bright);border-radius:2px}
+.project-icon{flex-shrink:0;opacity:.7}
+.project-item.active .project-icon{opacity:1}
+.project-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.project-badges{display:flex;gap:4px;flex-shrink:0}
+.pbadge{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:100px;border:1px solid}
+.badge-active{background:rgba(99,153,34,.15);color:var(--green);border-color:rgba(99,153,34,.25)}
+.badge-shared{background:rgba(99,153,34,.08);color:var(--text-muted);border-color:var(--border)}
+.badge-private{background:rgba(74,96,64,.2);color:var(--text-muted);border-color:var(--border)}
+.chat-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;transition:background .15s;margin:1px 0}
+.chat-item:hover{background:var(--bg3)}
+.chat-item.active{background:rgba(99,153,34,.10)}
+.chat-item-icon{flex-shrink:0;padding-top:1px;opacity:.5}
+.chat-item-body{flex:1;min-width:0}
+.chat-item-title{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-item.active .chat-item-title{color:var(--text-primary)}
+.chat-item-meta{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px}
+.sidebar-footer{padding:10px 12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.sb-footer-btn{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-muted);transition:all .15s;background:none;border:none;width:100%;text-align:left}
+.sb-footer-btn:hover{background:var(--bg3);color:var(--text-secondary)}
+
+/* MAIN */
+.main{flex:1;display:flex;overflow:hidden;position:relative}
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--bg)}
+.chat-area::before{display:none}
+
+/* PROJECTS VIEW */
+.projects-view{display:none;flex:1;overflow-y:auto;background:var(--bg);flex-direction:column}
+.projects-view.active{display:flex}
+.pv-header{padding:36px 44px 24px;flex-shrink:0}
+.pv-title{font-size:28px;font-weight:600;letter-spacing:-0.8px;color:var(--text-primary);margin-bottom:5px}
+.pv-sub{font-size:13px;color:var(--text-muted)}
+.pv-toolbar{display:flex;align-items:center;gap:12px;padding:0 44px 20px;flex-shrink:0}
+.pv-search-wrap{position:relative;flex:1}
+.pv-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
+.pv-search{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:9px 14px 9px 38px;color:var(--text-primary);font-size:13px;font-family:var(--sans);outline:none;transition:border-color .2s}
+.pv-search:focus{border-color:var(--green)}
+.pv-search::placeholder{color:var(--text-muted)}
+.pv-sort{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text-secondary);font-size:12px;font-family:var(--mono);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:border-color .2s}
+.pv-sort:hover{border-color:var(--border-bright)}
+.btn-new-project{background:var(--green);border:none;border-radius:8px;padding:9px 18px;color:var(--bg);font-size:12.5px;font-family:var(--sans);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background .18s,box-shadow .18s}
+.btn-new-project:hover{background:var(--green-bright);box-shadow:0 3px 14px rgba(99,153,34,.35)}
+.pv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:0 44px 44px}
+.pc{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:border-color .2s,transform .15s,background .2s;position:relative;overflow:hidden;animation:fadeUp .3s ease both}
+.pc:hover{border-color:var(--border-bright);transform:translateY(-2px);background:var(--bg3)}
+.pc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--green-bright));opacity:0;transition:opacity .2s}
+.pc:hover::before{opacity:1}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.pc-icon{width:38px;height:38px;border-radius:9px;background:rgba(99,153,34,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.pc-badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.pc-name{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:5px;letter-spacing:-0.3px}
+.pc-desc{font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:14px}
+.pc-footer{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:12px}
+.pc-stat{display:flex;align-items:center;gap:5px}
+.pc-new{background:rgba(99,153,34,.06);border:1.5px dashed rgba(99,153,34,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:170px;color:var(--text-muted);transition:all .2s}
+.pc-new:hover{background:rgba(99,153,34,.1);border-color:var(--green);color:var(--green-bright)}
+.pc-new-icon{width:42px;height:42px;border-radius:50%;background:rgba(99,153,34,.1);border:1px solid rgba(99,153,34,.25);display:flex;align-items:center;justify-content:center}
+.pc-new span{font-size:13px;font-family:var(--mono)}
+
+/* PROJECT DETAIL */
+.pd-view{display:none;flex:1;overflow-y:auto;background:var(--bg);flex-direction:column}
+.pd-view.active{display:flex}
+.pd-header{padding:22px 32px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:flex-start;gap:14px}
+.pd-back{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text-muted);font-size:12px;font-family:var(--mono);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;flex-shrink:0;margin-top:2px}
+.pd-back:hover{border-color:var(--border-bright);color:var(--text-secondary)}
+.pd-info{flex:1}
+.pd-name{font-size:22px;font-weight:600;letter-spacing:-0.5px;color:var(--text-primary);margin-bottom:5px}
+.pd-meta{font-family:var(--mono);font-size:10.5px;color:var(--text-muted);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pd-meta-item{display:flex;align-items:center;gap:5px}
+.pd-actions{display:flex;gap:8px;flex-shrink:0}
+.pd-body{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:18px;padding:22px 32px 32px;overflow-y:auto;flex:1}
+.ps{background:var(--bg2);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+.ps.full{grid-column:1/-1}
+.ps-header{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ps-title{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);flex:1}
+.ps-count{font-family:var(--mono);font-size:10px;color:var(--text-muted)}
+.ps-add-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:5px;font-size:11.5px;padding:4px 8px;border-radius:6px;transition:all .15s}
+.ps-add-btn:hover{background:var(--bg3);color:var(--green-bright)}
+.ps-body{flex:1;overflow-y:auto;max-height:260px}
+.ps-body::-webkit-scrollbar{width:3px}
+.ps-body::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.ps-item{display:flex;align-items:flex-start;gap:10px;padding:11px 17px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.ps-item:last-child{border-bottom:none}
+.ps-item:hover{background:var(--bg3)}
+.ps-item-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ps-item-body{flex:1;min-width:0}
+.ps-item-title{font-size:12.5px;color:var(--text-secondary);line-height:1.4;margin-bottom:3px}
+.ps-item-meta{font-family:var(--mono);font-size:10px;color:var(--text-muted)}
+.ps-type{font-family:var(--mono);font-size:8.5px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.tp-paper{background:rgba(99,153,34,.12);color:var(--green);border:1px solid rgba(99,153,34,.2)}
+.tp-proto{background:rgba(201,162,39,.1);color:var(--gold);border:1px solid rgba(201,162,39,.2)}
+.tp-up{background:rgba(74,96,64,.2);color:var(--text-muted);border:1px solid var(--border)}
+.ps-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:500;flex-shrink:0;margin-top:1px}
+.ps-empty{padding:30px 17px;text-align:center;color:var(--text-muted);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.ps-empty-btn{background:none;border:1px dashed var(--border);border-radius:8px;padding:7px 14px;color:var(--text-muted);font-size:12px;cursor:pointer;transition:all .15s}
+.ps-empty-btn:hover{border-color:var(--green);color:var(--green-bright)}
+
+/* WELCOME */
+.welcome-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 20px 0;position:relative;z-index:1;overflow-y:auto}
+.welcome-title{font-size:clamp(20px,2.6vw,28px);font-weight:600;text-align:center;letter-spacing:-0.8px;line-height:1.2;margin-bottom:8px;animation:fadeUp .4s ease .05s both}
+.welcome-title em{color:var(--green-bright);font-style:normal}
+.welcome-sub{font-size:12.5px;color:var(--text-secondary);text-align:center;max-width:440px;line-height:1.55;margin-bottom:16px;animation:fadeUp .4s ease .1s both}
+.sug-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:640px;margin-bottom:14px;animation:fadeUp .4s ease .15s both}
+.sug-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 13px;cursor:pointer;transition:border-color .2s,transform .15s,background .2s;display:flex;gap:10px;align-items:center}
+.sug-card:hover{border-color:var(--border-bright);transform:translateY(-1px);background:var(--bg4)}
+.sug-icon{width:28px;height:28px;border-radius:7px;background:rgba(99,153,34,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sug-body{flex:1;min-width:0}
+.sug-t{font-size:12px;font-weight:500;color:var(--text-primary);margin-bottom:1px}
+.sug-d{font-size:10.5px;color:var(--text-muted);line-height:1.3}
+.cap-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:640px;margin-bottom:14px;animation:fadeUp .4s ease .2s both}
+.cap-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:4px 11px;font-family:var(--mono);font-size:11px;color:var(--text-secondary);cursor:pointer;transition:all .18s;white-space:nowrap}
+.cap-chip:hover{border-color:var(--green);color:var(--green-bright);background:rgba(99,153,34,.08)}
+
+/* CHAT */
+.chat-state{flex:1;overflow-y:auto;padding:24px 0 8px;position:relative;z-index:1;display:none}
+.chat-state::-webkit-scrollbar{width:4px}
+.chat-state::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+.chat-state.active{display:block}
+.msg-wrap{max-width:680px;margin:0 auto;padding:0 24px}
+.msg{display:flex;gap:12px;margin-bottom:24px;animation:fadeUp .3s ease both}
+.msg-avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:500;margin-top:2px}
+.msg-avatar.user{background:var(--green-mid);border:1.5px solid var(--green);color:var(--green-bright)}
+.msg-avatar.ai{background:var(--bg3);border:1.5px solid var(--border-bright);color:var(--green-bright)}
+.msg-content{flex:1;min-width:0}
+.msg-name{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.msg-name.ai-name{color:var(--green)}
+.msg-bubble{font-size:13.5px;line-height:1.65;color:var(--text-secondary)}
+.msg-bubble.user-bubble{background:var(--bg3);border:1px solid var(--border);border-radius:12px 12px 4px 12px;padding:11px 15px;color:var(--text-primary);display:inline-block}
+.msg-bubble p{margin-bottom:8px}.msg-bubble p:last-child{margin-bottom:0}
+.msg-bubble ul{padding-left:18px;margin:6px 0}.msg-bubble ul li{margin-bottom:4px}
+.msg-bubble strong{color:var(--text-primary);font-weight:500}
+.msg-bubble code{font-family:var(--mono);font-size:12px;background:rgba(99,153,34,.1);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--green-bright)}
+.q-list{background:var(--bg3);border:1px solid var(--border-bright);border-radius:10px;padding:14px 16px;margin-top:10px;border-left:3px solid var(--green)}
+.q-list-title{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.q-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;color:var(--text-secondary)}
+.q-item:last-child{margin-bottom:0}
+.q-num{font-family:var(--mono);font-size:11px;color:var(--green);flex-shrink:0;padding-top:1px;min-width:20px}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:14px 16px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:typing-bounce 1.2s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+.inv-ctx-bar{display:none;background:var(--gold-dim);border:1px solid rgba(201,162,39,.25);border-radius:8px;padding:7px 12px;font-family:var(--mono);font-size:10.5px;color:var(--gold);margin:0 auto 12px;max-width:680px;width:calc(100% - 48px);position:relative;z-index:1;align-items:center;gap:8px}
+.inv-ctx-bar.visible{display:flex}
+
+/* INPUT */
+.input-area{padding:10px 20px 14px;position:relative;z-index:10;background:linear-gradient(to bottom,transparent,var(--bg) 28%)}
+.input-area-inner{max-width:680px;margin:0 auto}
+.input-box{background:var(--bg3);border:1.5px solid var(--border-bright);border-radius:14px;padding:10px 12px;box-shadow:0 4px 24px var(--shadow);transition:border-color .2s,box-shadow .2s}
+.input-box:focus-within{border-color:var(--green);box-shadow:0 0 0 4px rgba(99,153,34,.1),0 4px 24px var(--shadow)}
+.input-row{display:flex;align-items:flex-end;gap:10px}
+.input-icon-lab{flex-shrink:0;padding-bottom:2px;opacity:.5}
+.chat-textarea{flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-size:13.5px;font-family:var(--sans);font-weight:300;resize:none;line-height:1.55;min-height:22px;max-height:160px;overflow-y:auto}
+.chat-textarea::placeholder{color:var(--text-muted)}
+.send-btn{width:34px;height:34px;border-radius:9px;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .18s,transform .1s,box-shadow .18s;color:var(--bg)}
+.send-btn:hover{background:var(--green-bright);box-shadow:0 3px 14px rgba(99,153,34,.4)}
+.send-btn:active{transform:scale(.95)}
+.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.input-chips-row{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.input-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg4);border:1px solid var(--border);border-radius:100px;padding:4px 10px;font-family:var(--mono);font-size:10.5px;color:var(--text-muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.input-chip:hover{border-color:var(--green);color:var(--green-bright)}
+.input-chip.gold:hover{border-color:var(--gold);color:var(--gold)}
+.input-chips-spacer{flex:1}
+.input-meta{font-family:var(--mono);font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:5px;flex-shrink:0}
+.input-meta span{color:var(--green)}
+
+/* RIGHT PANEL */
+.project-panel{width:var(--panel-w);background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1)}
+.project-panel.collapsed{width:0;border-left:none}
+.panel-header{padding:0 14px;height:var(--topbar-h);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.panel-title{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);flex:1;white-space:nowrap;overflow:hidden}
+.panel-close{width:26px;height:26px;border-radius:6px;background:none;border:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.panel-close:hover{background:var(--bg3);color:var(--text-primary)}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 8px}
+.panel-tab{flex:1;padding:10px 6px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px;white-space:nowrap}
+.panel-tab:hover{color:var(--text-secondary)}
+.panel-tab.active{color:var(--green-bright);border-bottom-color:var(--green-bright)}
+.panel-content{flex:1;overflow-y:auto}
+.panel-content::-webkit-scrollbar{width:4px}
+.panel-content::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+.panel-tab-pane{display:none;padding:14px}
+.panel-tab-pane.active{display:block}
+.share-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px}
+.share-label{font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+.share-toggle{display:flex;gap:6px;margin-bottom:10px}
+.share-opt{flex:1;padding:7px;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:var(--bg4);text-align:center;transition:all .15s;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:4px}
+.share-opt:hover{border-color:var(--border-bright);color:var(--text-secondary)}
+.share-opt.active{border-color:var(--green);background:rgba(99,153,34,.1);color:var(--green-bright)}
+.share-opt-lbl{font-family:var(--mono);font-size:10px}
+.members-list{display:flex;flex-direction:column;gap:6px}
+.member-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;background:var(--bg4)}
+.member-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:500}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:11.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.member-role{font-family:var(--mono);font-size:9.5px;color:var(--text-muted)}
+.member-perm{font-family:var(--mono);font-size:9px;background:var(--bg5);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-muted);cursor:pointer;flex-shrink:0}
+.add-member-btn{width:100%;background:none;border:1px dashed var(--border);border-radius:7px;padding:7px;margin-top:6px;font-size:11.5px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.add-member-btn:hover{border-color:var(--green);color:var(--green-bright)}
+.res-list{display:flex;flex-direction:column;gap:6px}
+.res-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color .18s}
+.res-item:hover{border-color:var(--border-bright)}
+.res-item-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px}
+.res-badge{font-family:var(--mono);font-size:8.5px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.rb-paper{background:rgba(99,153,34,.12);color:var(--green);border:1px solid rgba(99,153,34,.2)}
+.rb-proto{background:rgba(201,162,39,.1);color:var(--gold);border:1px solid rgba(201,162,39,.2)}
+.rb-up{background:rgba(74,96,64,.2);color:var(--text-muted);border:1px solid var(--border)}
+.res-title{font-size:11.5px;color:var(--text-secondary);line-height:1.4;flex:1}
+.res-meta{font-family:var(--mono);font-size:9.5px;color:var(--text-muted)}
+.add-res-btn{width:100%;background:none;border:1px dashed var(--border);border-radius:8px;padding:10px;margin-top:4px;font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.add-res-btn:hover{border-color:var(--green);color:var(--green-bright)}
+.panel-sec-lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;margin-top:14px}
+.panel-sec-lbl:first-child{margin-top:0}
+
+/* MODALS */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border-bright);border-radius:16px;width:min(820px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px var(--shadow);animation:fadeUp .25s ease both}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.modal-header-icon{width:36px;height:36px;border-radius:9px;background:var(--gold-dim);border:1px solid rgba(201,162,39,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-title{flex:1}
+.modal-title h2{font-size:15px;font-weight:600;color:var(--text-primary)}
+.modal-title p{font-size:11.5px;color:var(--text-muted);margin-top:1px}
+.modal-close{width:32px;height:32px;border-radius:8px;background:none;border:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-close:hover{background:var(--bg3);color:var(--text-primary)}
+.modal-tabs{display:flex;padding:0 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-tab{padding:10px 16px;font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.modal-tab:hover{color:var(--text-secondary)}
+.modal-tab.active{color:var(--green-bright);border-bottom-color:var(--green-bright)}
+.modal-body{flex:1;overflow-y:auto;padding:18px 20px}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+.inv-pane{display:none}
+.inv-pane.active{display:block}
+
+/* upload zone */
+.upload-zone{border:1.5px dashed rgba(201,162,39,.4);border-radius:12px;padding:32px 20px;text-align:center;margin-bottom:18px;cursor:pointer;transition:all .2s;background:var(--gold-dim)}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--gold);background:rgba(201,162,39,.2)}
+.upload-zone input[type=file]{display:none}
+.upload-zone-icon{width:52px;height:52px;border-radius:50%;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.upload-zone-title{font-size:14px;font-weight:500;color:var(--green-light);margin-bottom:6px}
+.upload-zone-sub{font-size:12px;color:var(--text-muted);line-height:1.5}
+.upload-formats{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.fmt-tag{font-family:var(--mono);font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 9px;color:var(--text-muted)}
+.upload-progress{display:none;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.upload-progress.visible{display:flex}
+.prog-bar{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-bright));border-radius:2px;animation:prog 2.2s ease forwards}
+.prog-text{font-family:var(--mono);font-size:10.5px;color:var(--gold);white-space:nowrap}
+@keyframes prog{from{width:0}to{width:88%}}
+.fmt-cards{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.fmt-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.fmt-card-body h4{font-size:12.5px;font-weight:500;color:var(--text-primary);margin-bottom:3px}
+.fmt-card-body p{font-size:11.5px;color:var(--text-muted);line-height:1.5}
+.info-banner{background:var(--gold-dim);border:1px solid rgba(201,162,39,.25);border-radius:9px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:11.5px;color:var(--gold);line-height:1.5}
+
+.inv-search{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text-primary);font-size:12.5px;font-family:var(--sans);outline:none;margin-bottom:14px;transition:border-color .2s}
+.inv-search:focus{border-color:var(--green)}
+.inv-search::placeholder{color:var(--text-muted)}
+.inv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inv-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .18s,transform .12s;position:relative}
+.inv-card:hover{border-color:var(--border-bright);transform:translateY(-1px)}
+.inv-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.inv-card-icon{width:28px;height:28px;border-radius:7px;background:rgba(99,153,34,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.inv-card-name{font-size:12.5px;font-weight:500;color:var(--text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-card-body{font-size:11px;color:var(--text-muted);line-height:1.45}
+.inv-status{position:absolute;top:10px;right:10px;width:7px;height:7px;border-radius:50%}
+.s-ok{background:var(--green-bright)}
+.s-low{background:var(--gold)}
+.s-out{background:#d94f4f}
+.inv-add-btn{width:100%;background:none;border:1px dashed var(--border);border-radius:10px;padding:14px;font-size:12.5px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;margin-top:8px}
+.inv-add-btn:hover{border-color:var(--green);color:var(--green-bright)}
+.inv-card-del{position:absolute;top:7px;right:7px;width:20px;height:20px;border-radius:5px;background:none;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s;padding:0}
+.inv-card:hover .inv-card-del{display:flex}
+.inv-card-del:hover{background:rgba(210,55,55,.15);color:#d23737}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-footer-note{font-family:var(--mono);font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+.modal-footer-note span{color:var(--gold)}
+.btn-primary{background:var(--green);border:none;border-radius:8px;padding:8px 18px;color:var(--bg);font-size:12px;font-family:var(--sans);font-weight:500;cursor:pointer;transition:background .18s,box-shadow .18s}
+.btn-primary:hover{background:var(--green-bright);box-shadow:0 3px 14px rgba(99,153,34,.35)}
+.btn-ghost{background:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--text-muted);font-size:12px;font-family:var(--sans);cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:var(--border-bright);color:var(--text-secondary)}
+
+/* NEW PROJECT MODAL */
+.np-modal{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;width:min(480px,95vw);box-shadow:0 24px 80px var(--shadow);animation:fadeUp .25s ease both}
+.np-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.np-header h3{font-size:14px;font-weight:600;color:var(--text-primary);flex:1}
+.np-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.np-field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+.np-input{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text-primary);font-size:12.5px;font-family:var(--sans);outline:none;transition:border-color .2s}
+.np-input:focus{border-color:var(--green)}
+.np-input::placeholder{color:var(--text-muted)}
+.np-vis{display:flex;gap:6px}
+.vis-opt{flex:1;padding:10px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg4);text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:5px}
+.vis-opt:hover{border-color:var(--border-bright)}
+.vis-opt.active{border-color:var(--green);background:rgba(99,153,34,.1)}
+.vis-opt-icon{color:var(--text-muted)}
+.vis-opt.active .vis-opt-icon{color:var(--green-bright)}
+.vis-lbl{font-family:var(--mono);font-size:10px;color:var(--text-muted)}
+.vis-opt.active .vis-lbl{color:var(--green)}
+.vis-desc{font-size:10px;color:var(--text-muted);line-height:1.3}
+.np-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+/* CONNECTORS MODAL */
+.conn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:18px 22px}
+.conn-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 15px;display:flex;flex-direction:column;gap:10px;transition:border-color .18s,background .18s;position:relative;overflow:hidden}
+.conn-card:hover{border-color:var(--border-bright);background:var(--bg4)}
+.conn-card-top{display:flex;align-items:center;gap:10px}
+.conn-logo{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.5px}
+.conn-logo.green{background:rgba(99,153,34,.18);color:var(--green-bright);border:1px solid rgba(99,153,34,.3)}
+.conn-logo.blue{background:rgba(40,100,200,.15);color:#6aaeff;border:1px solid rgba(40,100,200,.25)}
+.conn-logo.red{background:rgba(200,50,50,.13);color:#e07070;border:1px solid rgba(200,50,50,.22)}
+.conn-logo.purple{background:rgba(120,60,200,.15);color:#b085f5;border:1px solid rgba(120,60,200,.25)}
+.conn-logo.teal{background:rgba(30,160,140,.15);color:#4ec9b8;border:1px solid rgba(30,160,140,.25)}
+.conn-logo.gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(224,181,46,.3)}
+.conn-info{flex:1;min-width:0}
+.conn-name{font-size:12.5px;font-weight:600;color:var(--text-primary);line-height:1.2}
+.conn-cat{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.conn-desc{font-size:11px;color:var(--text-muted);line-height:1.5}
+.conn-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.conn-status{font-family:var(--mono);font-size:9px;letter-spacing:.8px;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.conn-status::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.conn-status.connected{color:var(--green-bright)}.conn-status.connected::before{background:var(--green-bright);box-shadow:0 0 5px var(--green-bright)}
+.conn-status.available{color:var(--text-muted)}.conn-status.available::before{background:var(--text-muted)}
+.conn-status.soon{color:var(--gold)}.conn-status.soon::before{background:var(--gold)}
+.conn-btn{font-family:var(--mono);font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;border-radius:6px;padding:4px 10px;border:1px solid;cursor:pointer;transition:all .15s;font-weight:500;background:none}
+.conn-btn.connect{border-color:var(--green);color:var(--green-bright)}.conn-btn.connect:hover{background:var(--green);color:var(--bg)}
+.conn-btn.open{border-color:var(--border-bright);color:var(--text-secondary)}.conn-btn.open:hover{border-color:var(--green-bright);color:var(--text-primary)}
+.conn-btn.soon{border-color:var(--border);color:var(--text-muted);cursor:default;opacity:.6}
+.conn-section-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:18px 22px 8px;border-top:1px solid var(--border)}
+.conn-section-label:first-child{border-top:none;padding-top:18px}
+
+/* THEME TOGGLE */
+.theme-toggle{width:36px;height:20px;background:var(--bg3);border:1.5px solid var(--border-bright);border-radius:100px;cursor:pointer;position:relative;transition:background .25s,border-color .25s;flex-shrink:0}
+.theme-toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--green-bright);transition:transform .25s,background .25s;box-shadow:0 1px 4px var(--shadow)}
+[data-theme="light"] .theme-toggle::after{transform:translateX(14px);background:var(--green)}
+.theme-toggle-wrap{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;cursor:pointer;transition:background .15s}
+.theme-toggle-wrap:hover{background:var(--bg3)}
+.theme-icon{color:var(--text-muted);flex-shrink:0;transition:color .2s}
+.theme-toggle-wrap:hover .theme-icon{color:var(--text-secondary)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+@keyframes typing-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+@media(max-width:900px){:root{--panel-w:280px}}
+@media(max-width:720px){
+  .menu-toggle{display:flex}.icon-btn{display:none}
+  .topbar-logo-area{border-right:none;width:auto}
+  .topbar-center{flex:0 0 auto;padding:0 8px}
+  .model-badge{padding:4px 9px;font-size:11px;gap:5px}
+  .model-badge-sub,.model-badge svg,.lab-ctx{display:none}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:300;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);width:min(var(--sidebar-w),82vw)}
+  .sidebar.open{transform:translateX(0);box-shadow:6px 0 40px rgba(0,0,0,.6)}
+  .project-panel{display:none}
+  .pv-grid,.pd-body{grid-template-columns:1fr}
+  .pv-header,.pv-toolbar{padding-left:16px;padding-right:16px}
+  .pv-grid{padding:0 16px 32px}
+  .pd-header{padding:16px}
+  .pd-body{padding:16px}
+  .msg-wrap{padding:0 12px}
+  .input-area{padding:8px 10px 12px}
+  .input-meta{display:none}
+  .inv-grid{grid-template-columns:1fr}
+  .sug-grid{grid-template-columns:1fr;max-width:100%}
+  .welcome-state{justify-content:flex-start;padding:16px 14px 0;overflow-y:auto}
+}
+@media(max-width:480px){.pv-grid{padding:0 12px 24px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="topbar-logo-area" onclick="goHome();closeSidebar()">
+    <div class="logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5 2.5"/><path d="m14 8.5-1.5 1.5"/><path d="m7 18 2.5-2.5"/><path d="m3.5 14.5 1.5-1.5"/></svg>
+    </div>
+    <span class="logo-text">sc<em>AI</em>ence</span>
+    <span class="pro-badge">Lab Pro</span>
+  </div>
+  <div class="topbar-center">
+    <div class="model-badge">
+      <div class="model-dot"></div>
+      scAIence Pro<span class="model-badge-sub"> · literature-trained</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="theme-toggle-wrap" onclick="toggleTheme()" title="Cambiar tema">
+      <svg class="theme-icon" id="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="theme-icon" id="theme-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <button class="theme-toggle" id="theme-toggle-btn" aria-label="Cambiar tema"></button>
+    </div>
+    <button class="icon-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
+    <button class="icon-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+    <div class="avatar">MP</div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <button class="new-chat-btn" onclick="goHome();closeSidebar()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuevo experimento
+    </button>
+    <button class="inventory-btn" onclick="openInventory();closeSidebar()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
+      Inventario y equipos
+    </button>
+    <button class="connectors-btn" onclick="openConnectors();closeSidebar()">
+      <div class="conn-dot"></div>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Connectors
+      <span style="margin-left:auto;font-family:var(--mono);font-size:9px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--green-bright);letter-spacing:.5px">3 activos</span>
+    </button>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">
+        <button class="sb-label-btn" onclick="showView('projects');closeSidebar()">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          Proyectos
+        </button>
+        <button class="sb-add" onclick="openNewProject();closeSidebar()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <button class="sb-projects-nav" onclick="showView('projects');closeSidebar()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        Ver todos los proyectos
+        <svg width="10" height="10" style="margin-left:auto;flex-shrink:0;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="project-item active" id="sb-neuro" onclick="openProject('neuro');closeSidebar()">
+        <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        <span class="project-name">Modelos neurodegenerativos</span>
+        <div class="project-badges"><span class="pbadge badge-active">activo</span><span class="pbadge badge-shared">comp.</span></div>
+      </div>
+      <div class="project-item" id="sb-tumor" onclick="openProject('tumor');closeSidebar()">
+        <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        <span class="project-name">Tumor microenvironment</span>
+        <div class="project-badges"><span class="pbadge badge-private">privado</span></div>
+      </div>
+      <div class="project-item" id="sb-crispr" onclick="openProject('crispr');closeSidebar()">
+        <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        <span class="project-name">CRISPR base editing</span>
+        <div class="project-badges"><span class="pbadge badge-shared">comp.</span></div>
+      </div>
+      <div class="project-item" id="sb-scrna" onclick="openProject('scrna');closeSidebar()">
+        <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        <span class="project-name">Single-cell RNA-seq</span>
+        <div class="project-badges"><span class="pbadge badge-private">privado</span></div>
+      </div>
+      <div class="project-item" id="sb-prot" onclick="openProject('prot');closeSidebar()">
+        <svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+        <span class="project-name">Structural proteomics</span>
+        <div class="project-badges"><span class="pbadge badge-shared">comp.</span></div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Recientes</div>
+      <div class="chat-item active" onclick="loadChat(this,'pcr');closeSidebar()">
+        <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="chat-item-body"><div class="chat-item-title">RT-qPCR primers — TP53</div><div class="chat-item-meta">Hoy · Diseño de primers</div></div>
+      </div>
+      <div class="chat-item" onclick="loadChat(this,'crispr_c');closeSidebar()">
+        <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="chat-item-body"><div class="chat-item-title">sgRNA para BRCA1 exón 11</div><div class="chat-item-meta">Ayer · CRISPR</div></div>
+      </div>
+      <div class="chat-item" onclick="loadChat(this,'western');closeSidebar()">
+        <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="chat-item-body"><div class="chat-item-title">Western blot — troubleshoot</div><div class="chat-item-meta">Hace 2 días · Troubleshooting</div></div>
+      </div>
+      <div class="chat-item" onclick="loadChat(this,'calc');closeSidebar()">
+        <svg class="chat-item-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="chat-item-body"><div class="chat-item-title">Titer &amp; MOI lentiviral</div><div class="chat-item-meta">Hace 3 días · Cálculos</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="sb-footer-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Miembros del equipo (4)</button>
+    <button class="sb-footer-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Configuración</button>
+    <button class="sb-footer-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Ayuda y docs</button>
+  </div>
+</aside>
+
+<main class="main">
+<div class="chat-area" id="chat-area">
+
+  <!-- ══ PROJECTS VIEW ══ -->
+  <div class="projects-view" id="view-projects">
+    <div class="pv-header">
+      <div class="pv-title">Proyectos</div>
+      <div class="pv-sub">Todos los proyectos de tu laboratorio en un lugar.</div>
+    </div>
+    <div class="pv-toolbar">
+      <div class="pv-search-wrap">
+        <svg class="pv-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="pv-search" placeholder="Buscar proyectos..." oninput="filterProjects(this.value)"/>
+      </div>
+      <div class="pv-sort">Ordenar por <strong>Última actualización</strong> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <button class="btn-new-project" onclick="openNewProject()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo proyecto
+      </button>
+    </div>
+    <div class="pv-grid" id="pv-grid"></div>
+  </div>
+
+  <!-- ══ PROJECT DETAIL ══ -->
+  <div class="pd-view" id="view-pd">
+    <div class="pd-header">
+      <button class="pd-back" onclick="showView('projects')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Proyectos
+      </button>
+      <div class="pd-info">
+        <div class="pd-name" id="pd-name">Modelos neurodegenerativos</div>
+        <div class="pd-meta">
+          <div class="pd-meta-item" id="pd-vis-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <span id="pd-vis-txt">Compartido</span>
+          </div>
+          <div class="pd-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="pd-updated">Actualizado hoy</span></div>
+          <div class="pd-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span id="pd-members">4 miembros</span></div>
+        </div>
+      </div>
+      <div class="pd-actions">
+        <button class="btn-ghost" onclick="openPanelFor()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Compartir
+        </button>
+        <button class="btn-primary" onclick="showView('welcome')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuevo chat
+        </button>
+      </div>
+    </div>
+    <div class="pd-body">
+      <!-- chats full width -->
+      <div class="ps full">
+        <div class="ps-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="ps-title">Chats recientes</span>
+          <span class="ps-count" id="pd-chats-count">0 conversaciones</span>
+          <button class="ps-add-btn" onclick="showView('welcome')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nuevo</button>
+        </div>
+        <div class="ps-body" id="pd-chats-body"></div>
+      </div>
+      <!-- papers -->
+      <div class="ps">
+        <div class="ps-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="ps-title">Papers de referencia</span>
+          <span class="ps-count" id="pd-papers-count">0 papers</span>
+          <button class="ps-add-btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar</button>
+        </div>
+        <div class="ps-body" id="pd-papers-body"></div>
+      </div>
+      <!-- protocols -->
+      <div class="ps">
+        <div class="ps-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 9H8L9 3z"/><path d="M8 12c-2 2-3 4-2 7a4 4 0 0 0 4 2h4a4 4 0 0 0 4-2c1-3 0-5-2-7"/></svg>
+          <span class="ps-title">Protocolos</span>
+          <span class="ps-count" id="pd-proto-count">0 protocolos</span>
+          <button class="ps-add-btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Subir</button>
+        </div>
+        <div class="ps-body" id="pd-proto-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WELCOME VIEW ══ -->
+  <div class="welcome-state" id="view-welcome">
+    <h1 class="welcome-title">¿Qué vas a <em>diseñar</em> hoy?</h1>
+    <p class="welcome-sub">Preguntame sobre tu experimento — primero hago las preguntas correctas y luego te doy una respuesta rigurosa adaptada a tu laboratorio.</p>
+    <div class="sug-grid">
+      <div class="sug-card" onclick="startChat('Diseñar protocolo CRISPR-Cas9 para knockout de TP53 en HCT116')">
+        <div class="sug-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg></div>
+        <div class="sug-body"><div class="sug-t">Protocolo CRISPR</div><div class="sug-d">sgRNAs y estrategia adaptada a tu equipamiento</div></div>
+      </div>
+      <div class="sug-card" onclick="startChat('Mi Western blot tiene mucho background y bandas inespecíficas')">
+        <div class="sug-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="sug-body"><div class="sug-t">Troubleshoot resultados</div><div class="sug-d">Diagnóstico usando el inventario de tu lab</div></div>
+      </div>
+      <div class="sug-card" onclick="startChat('Diseñar primers RT-qPCR para TP53, MDM2 y CDKN1A')">
+        <div class="sug-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="sug-body"><div class="sug-t">Diseño de primers</div><div class="sug-d">Tm, GC%, off-target y tamaño de amplicon</div></div>
+      </div>
+      <div class="sug-card" onclick="startChat('Calcular MOI lentiviral para 500.000 células HEK293T a MOI 5')">
+        <div class="sug-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
+        <div class="sug-body"><div class="sug-t">Cálculos de lab</div><div class="sug-d">MOI, diluciones, buffers y recetas</div></div>
+      </div>
+    </div>
+    <div class="cap-row">
+      <div class="cap-chip" onclick="fillPrompt('Diseño de protocolo: ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Protocolo</div>
+      <div class="cap-chip" onclick="fillPrompt('Diseñar primers para ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/></svg>Primers</div>
+      <div class="cap-chip" onclick="fillPrompt('Troubleshoot: ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Troubleshoot</div>
+      <div class="cap-chip" onclick="fillPrompt('Diseñar sgRNAs para CRISPR knockout de ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/></svg>CRISPR</div>
+      <div class="cap-chip" onclick="fillPrompt('Biología celular: ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="10"/></svg>Cell biology</div>
+      <div class="cap-chip" onclick="fillPrompt('Calcular ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>Cálculos</div>
+      <div class="cap-chip" onclick="fillPrompt('Diseño experimental para ')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Exp. design</div>
+    </div>
+  </div>
+
+  <div class="inv-ctx-bar" id="inv-ctx-bar">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    Adaptando a Lab ORT Biotech — los protocolos usarán el equipamiento disponible y marcarán reactivos faltantes.
+    <span style="flex:1"></span>
+    <span style="cursor:pointer;opacity:.7" onclick="this.parentElement.classList.remove('visible')">✕</span>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-state" id="chat-state">
+    <div class="msg-wrap" id="messages"></div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <div class="input-area-inner">
+      <div class="input-box">
+        <div class="input-row">
+          <div class="input-icon-lab"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 9H8L9 3z"/><path d="M8 12c-2 2-3 4-2 7a4 4 0 0 0 4 2h4a4 4 0 0 0 4-2c1-3 0-5-2-7"/></svg></div>
+          <textarea class="chat-textarea" id="chat-input" rows="1" placeholder="ej. Diseñar un protocolo de Western blot para detectar phospho-ERK en células HeLa..."></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+        </div>
+        <div class="input-chips-row">
+          <div class="input-chip" onclick="fillPrompt('Protocolo para ')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Protocolo</div>
+          <div class="input-chip" onclick="fillPrompt('Primers para ')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/></svg>Primers</div>
+          <div class="input-chip" onclick="fillPrompt('Troubleshoot: ')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Troubleshoot</div>
+          <div class="input-chip" onclick="fillPrompt('Calcular ')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>Calcular</div>
+          <div class="input-chip gold" onclick="openInventory()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Inventario</div>
+          <div class="input-chips-spacer"></div>
+          <div class="input-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span>PubMed</span> · <span>Primer3</span> · <span>NCBI</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="project-panel collapsed" id="project-panel">
+  <div class="panel-header">
+    <span class="panel-title" id="panel-proj-name">Proyecto</span>
+    <button class="panel-close" onclick="closePanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="panel-tabs">
+    <div class="panel-tab active" onclick="switchPanelTab('sharing',this)">Compartir</div>
+    <div class="panel-tab" onclick="switchPanelTab('papers',this)">Papers</div>
+    <div class="panel-tab" onclick="switchPanelTab('protos',this)">Protocolos</div>
+  </div>
+  <div class="panel-content">
+    <div class="panel-tab-pane active" id="pane-sharing">
+      <div class="share-box">
+        <div class="share-label">Visibilidad</div>
+        <div class="share-toggle">
+          <div class="share-opt active" onclick="setVis(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="share-opt-lbl">Compartido</span></div>
+          <div class="share-opt" onclick="setVis(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="share-opt-lbl">Privado</span></div>
+        </div>
+      </div>
+      <div class="share-label" style="margin-bottom:8px">Miembros con acceso</div>
+      <div class="members-list">
+        <div class="member-row"><div class="member-av" style="background:#2d5a1e;color:#97C459">MP</div><div class="member-info"><div class="member-name">Mechi P.</div><div class="member-role">Propietaria</div></div><div class="member-perm">owner</div></div>
+        <div class="member-row"><div class="member-av" style="background:#1c2a1f;color:#8aaa70">LR</div><div class="member-info"><div class="member-name">Laura R.</div><div class="member-role">PhD student</div></div><div class="member-perm">edit</div></div>
+        <div class="member-row"><div class="member-av" style="background:#1c2a1f;color:#8aaa70">JM</div><div class="member-info"><div class="member-name">Juan M.</div><div class="member-role">Lab coordinator</div></div><div class="member-perm">view</div></div>
+        <div class="member-row"><div class="member-av" style="background:#1c2a1f;color:#8aaa70">SC</div><div class="member-info"><div class="member-name">Sofia C.</div><div class="member-role">MSc student</div></div><div class="member-perm">view</div></div>
+        <button class="add-member-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar miembro</button>
+      </div>
+    </div>
+    <div class="panel-tab-pane" id="pane-papers">
+      <div class="panel-sec-lbl">Papers de referencia</div>
+      <div class="res-list">
+        <div class="res-item"><div class="res-item-header"><span class="res-badge rb-paper">PubMed</span><div class="res-title">Targeting α-synuclein aggregation with small molecules</div></div><div class="res-meta">Fusco et al., 2023 · Nat Chem Biol</div></div>
+        <div class="res-item"><div class="res-item-header"><span class="res-badge rb-paper">PubMed</span><div class="res-title">iPSC-derived dopaminergic neurons in Parkinson's disease</div></div><div class="res-meta">Mazzulli et al., 2022 · Cell Stem Cell</div></div>
+        <div class="res-item"><div class="res-item-header"><span class="res-badge rb-up">PDF</span><div class="res-title">Revisión interna: modelos ND Q3 2024</div></div><div class="res-meta">Subido por MP · Jun 2024</div></div>
+      </div>
+      <button class="add-res-btn">+ Buscar y agregar paper</button>
+      <button class="add-res-btn" style="margin-top:4px">+ Subir PDF</button>
+    </div>
+    <div class="panel-tab-pane" id="pane-protos">
+      <div class="panel-sec-lbl">Protocolos guardados</div>
+      <div class="res-list">
+        <div class="res-item"><div class="res-item-header"><span class="res-badge rb-proto">scAIence</span><div class="res-title">IF para α-syn en SH-SY5Y</div></div><div class="res-meta">Generado Jun 12 · 8 pasos</div></div>
+        <div class="res-item"><div class="res-item-header"><span class="res-badge rb-up">Subido</span><div class="res-title">Thioflavin T assay — SOP ORT v2.1</div></div><div class="res-meta">Subido por JM · May 2024</div></div>
+      </div>
+      <button class="add-res-btn">+ Subir protocolo / SOP</button>
+    </div>
+  </div>
+</div>
+</main>
+</div>
+
+<!-- INVENTORY MODAL -->
+<!-- ══ CONNECTORS MODAL ══ -->
+<div class="modal-backdrop" id="conn-modal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div class="modal-title">
+        <h2>Connectors</h2>
+        <p>Conectá scAIence con tus herramientas bioinformáticas y fuentes de literatura científica.</p>
+      </div>
+      <button class="modal-close" onclick="closeConnectors()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;max-height:72vh">
+
+      <!-- Bioinformática -->
+      <div class="conn-section-label">Herramientas bioinformáticas</div>
+      <div class="conn-grid">
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></div>
+            <div class="conn-info"><div class="conn-name">SnapGene</div><div class="conn-cat">Diseño molecular</div></div>
+          </div>
+          <div class="conn-desc">Visualizá y editá mapas plasmídicos. scAIence puede generar construcciones y abrirlas directamente en SnapGene.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status connected">Conectado</span>
+            <button class="conn-btn open" onclick="alert('Abriendo SnapGene…')">Abrir</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div class="conn-info"><div class="conn-name">Benchling</div><div class="conn-cat">Notebook · Registro</div></div>
+          </div>
+          <div class="conn-desc">Exportá protocolos generados por scAIence directamente a tu notebook de Benchling como entradas firmadas.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status connected">Conectado</span>
+            <button class="conn-btn open" onclick="alert('Abriendo Benchling…')">Abrir</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo teal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <div class="conn-info"><div class="conn-name">NCBI BLAST</div><div class="conn-cat">Alineamiento de secuencias</div></div>
+          </div>
+          <div class="conn-desc">Verificá especificidad de primers y secuencias de interés contra el genoma completo sin salir de scAIence.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status connected">Conectado</span>
+            <button class="conn-btn open" onclick="window.open('https://blast.ncbi.nlm.nih.gov','_blank')">Abrir</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg></div>
+            <div class="conn-info"><div class="conn-name">Primer3</div><div class="conn-cat">Diseño de primers</div></div>
+          </div>
+          <div class="conn-desc">scAIence diseña los primers y los valida con Primer3 automáticamente. Parámetros Tm, GC% y dímeros incluidos.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'Primer3')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo gold"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div>
+            <div class="conn-info"><div class="conn-name">NEBcutter</div><div class="conn-cat">Enzimas de restricción</div></div>
+          </div>
+          <div class="conn-desc">Análisis de sitios de restricción para clonado clásico. scAIence sugiere la estrategia y NEBcutter confirma.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'NEBcutter')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="3" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="21" y2="12"/></svg></div>
+            <div class="conn-info"><div class="conn-name">UniProt</div><div class="conn-cat">Proteínas · Función</div></div>
+          </div>
+          <div class="conn-desc">Consultá ficha de proteína, dominios, variantes patogénicas y estructuras PDB desde el chat.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'UniProt')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M4 10h16"/><path d="M4 14h16"/></svg></div>
+            <div class="conn-info"><div class="conn-name">Ensembl</div><div class="conn-cat">Genómica · Anotaciones</div></div>
+          </div>
+          <div class="conn-desc">Accedé a coordenadas genómicas, transcriptos, variantes y anotaciones funcionales para cualquier gen o región.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'Ensembl')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo teal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="conn-info"><div class="conn-name">OligoAnalyzer</div><div class="conn-cat">Análisis de oligos</div></div>
+          </div>
+          <div class="conn-desc">Evaluación de dímeros, hairpins y temperatura de melting de oligonucleótidos diseñados en scAIence.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status soon">Próximamente</span>
+            <button class="conn-btn soon" disabled>En desarrollo</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Literatura -->
+      <div class="conn-section-label">Literatura científica</div>
+      <div class="conn-grid">
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div class="conn-info"><div class="conn-name">Nature Portfolio</div><div class="conn-cat">Literatura · Primaria</div></div>
+          </div>
+          <div class="conn-desc">Acceso a Nature, Nature Methods, Nature Cell Biology y más de 50 revistas del portfolio para contextualizar protocolos.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'Nature Portfolio')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+            <div class="conn-info"><div class="conn-name">Cell Press</div><div class="conn-cat">Literatura · Primaria</div></div>
+          </div>
+          <div class="conn-desc">Revistas Cell, Molecular Cell, Cell Reports, iScience. scAIence cita y resume artículos relevantes en tiempo real.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'Cell Press')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo teal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <div class="conn-info"><div class="conn-name">PubMed / NCBI</div><div class="conn-cat">Literatura · Base de datos</div></div>
+          </div>
+          <div class="conn-desc">Búsqueda automática en +35M de publicaciones. scAIence recupera los artículos más relevantes para cada protocolo.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status connected">Conectado</span>
+            <button class="conn-btn open" onclick="window.open('https://pubmed.ncbi.nlm.nih.gov','_blank')">Abrir</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div class="conn-info"><div class="conn-name">bioRxiv / medRxiv</div><div class="conn-cat">Preprints</div></div>
+          </div>
+          <div class="conn-desc">Acceso a preprints de biología y medicina antes de revisión formal. Ideal para metodología de vanguardia.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status available">Disponible</span>
+            <button class="conn-btn connect" onclick="connectTool(this,'bioRxiv')">Conectar</button>
+          </div>
+        </div>
+
+        <div class="conn-card">
+          <div class="conn-card-top">
+            <div class="conn-logo gold"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+            <div class="conn-info"><div class="conn-name">Science / AAAS</div><div class="conn-cat">Literatura · Primaria</div></div>
+          </div>
+          <div class="conn-desc">Acceso a Science, Science Advances y Science Translational Medicine para investigación multidisciplinaria.</div>
+          <div class="conn-card-footer">
+            <span class="conn-status soon">Próximamente</span>
+            <button class="conn-btn soon" disabled>En desarrollo</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INVENTORY MODAL ══ -->
+<div class="modal-backdrop" id="inv-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg></div>
+      <div class="modal-title"><h2>Inventario y equipos del laboratorio</h2><p>scAIence adapta cada protocolo a los recursos disponibles en tu lab.</p></div>
+      <button class="modal-close" onclick="closeInventory()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchInvTab('upload',this)">↑ Importar archivo</div>
+      <div class="modal-tab" onclick="switchInvTab('equip',this)">Equipos</div>
+      <div class="modal-tab" onclick="switchInvTab('reagents',this)">Reactivos</div>
+      <div class="modal-tab" onclick="switchInvTab('consumables',this)">Consumibles</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- UPLOAD -->
+      <div class="inv-pane active" id="inv-upload">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-inp').click()" ondrop="handleDrop(event)" ondragover="e=>{e.preventDefault();document.getElementById('upload-zone').classList.add('drag-over')}" ondragleave="document.getElementById('upload-zone').classList.remove('drag-over')">
+          <input type="file" id="file-inp" accept=".xlsx,.xls,.csv,.docx,.doc,.pdf,.txt" onchange="handleFile(event)"/>
+          <div class="upload-zone-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="upload-zone-title">Subí tu inventario existente</div>
+          <div class="upload-zone-sub">Arrastrá un archivo o hacé click para seleccionar.<br>scAIence detecta automáticamente equipos, reactivos y consumibles.</div>
+          <div class="upload-formats">
+            <span class="fmt-tag">Excel .xlsx</span><span class="fmt-tag">CSV .csv</span><span class="fmt-tag">Word .docx</span><span class="fmt-tag">PDF</span><span class="fmt-tag">Texto .txt</span>
+          </div>
+        </div>
+        <div class="upload-progress" id="upload-progress">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+          <div class="prog-text" id="prog-text">Procesando...</div>
+        </div>
+        <div class="fmt-cards">
+          <div class="fmt-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" style="flex-shrink:0;margin-top:1px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><div class="fmt-card-body"><h4>Planilla Excel o CSV</h4><p>Cualquier columna con nombre, descripción, cantidad o categoría. scAIence clasifica automáticamente equipos, reactivos y consumibles.</p></div></div>
+          <div class="fmt-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" style="flex-shrink:0;margin-top:1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div class="fmt-card-body"><h4>Word o PDF</h4><p>Listas de inventario, SOPs o catálogos. Se extrae el texto y se identifican ítems con sus detalles.</p></div></div>
+          <div class="fmt-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" style="flex-shrink:0;margin-top:1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><div class="fmt-card-body"><h4>Texto libre (.txt)</h4><p>Una lista simple en texto plano. Cada línea puede ser un ítem; scAIence infiere el tipo y los detalles.</p></div></div>
+        </div>
+        <div class="info-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>También podés agregar ítems de a uno desde las pestañas Equipos, Reactivos o Consumibles. El archivo importado y los ítems manuales se combinan automáticamente.</div>
+      </div>
+
+      <!-- EQUIPMENT -->
+      <div class="inv-pane" id="inv-equip">
+        <input class="inv-search" placeholder="Buscar equipos..." oninput="filterCards(this,'inv-equip')"/>
+        <div class="inv-grid">
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/><path d="M6 8h2v4H6z"/><path d="M10 8h2v4h-2z"/></svg></div><span class="inv-card-name">PCR Thermocycler</span></div><div class="inv-card-body">Eppendorf Mastercycler Pro S · 96 wells · ✓ Disponible</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M15 21V9"/><path d="M3 15h18"/></svg></div><span class="inv-card-name">Cabina de cultivo BSL-2</span></div><div class="inv-card-body">Esco Labculture Class II · ✓ Disponible</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="3" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="21" y2="12"/></svg></div><span class="inv-card-name">Microscopio confocal</span></div><div class="inv-card-body">Zeiss LSM 900 · 405/488/561/640 nm · Reserva requerida</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="inv-card-name">Citómetro de flujo</span></div><div class="inv-card-body">BD FACSCanto II · 3 lásers, 8 colores · ✓ Disponible</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-low"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg></div><span class="inv-card-name">Sistema qPCR</span></div><div class="inv-card-body">Bio-Rad CFX96 · ⚠ Servicio programado Jun 20</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-out"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d94f4f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/><line x1="9" y1="14" x2="15" y2="14"/></svg></div><span class="inv-card-name">Electroporador</span></div><div class="inv-card-body">Lonza Nucleofector 2b · ✗ En reparación — ETA Jul 2025</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M4 10h16"/><path d="M4 14h16"/><circle cx="9" cy="6" r="1" fill="var(--green-bright)"/><circle cx="15" cy="6" r="1" fill="var(--green-bright)"/></svg></div><span class="inv-card-name">Incubadora CO₂</span></div><div class="inv-card-body">Thermo Heracell 150i · 37°C / 5% CO₂ · ✓ Disponible</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="13" rx="1"/><path d="M2 11h20"/><path d="M2 14h20"/><path d="M5 8V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/></svg></div><span class="inv-card-name">Gel electroforesis</span></div><div class="inv-card-body">Bio-Rad Mini-PROTEAN Tetra · SDS-PAGE · ✓ Disponible</div></div>
+        </div>
+        <button class="inv-add-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar equipo</button>
+      </div>
+
+      <!-- REAGENTS -->
+      <div class="inv-pane" id="inv-reagents">
+        <input class="inv-search" placeholder="Buscar reactivos..." oninput="filterCards(this,'inv-reagents')"/>
+        <div class="inv-grid">
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l3 8H6L9 3z"/><path d="M6 11c0 5 2.5 8 6 9 3.5-1 6-4 6-9"/></svg></div><span class="inv-card-name">Lipofectamine 3000</span></div><div class="inv-card-body">Invitrogen · 1.5 mL · Exp. Dic 2025</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg></div><span class="inv-card-name">SYBR Green Master Mix</span></div><div class="inv-card-body">Bio-Rad iTaq · 2× · 5 mL</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-low"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 7v5c0 5.25 3.5 9.74 8 11 4.5-1.26 8-5.75 8-11V7L12 2z"/></svg></div><span class="inv-card-name">Anti-TP53 antibody</span></div><div class="inv-card-body">Cell Signaling #2524 · ⚠ Stock bajo: 20 µL</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></div><span class="inv-card-name">Cas9 (recombinante)</span></div><div class="inv-card-body">NEB M0386S · 20 µM · 3 alícuotas</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-out"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d94f4f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 6h4"/><path d="M10 10h4"/></svg></div><span class="inv-card-name">Puromicina</span></div><div class="inv-card-body">✗ Sin stock · Pedido pendiente ~1 semana</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div><span class="inv-card-name">Trypan blue 0.4%</span></div><div class="inv-card-body">Sigma-Aldrich · 100 mL · ✓ En stock</div></div>
+        </div>
+        <button class="inv-add-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar reactivo</button>
+      </div>
+
+      <!-- CONSUMABLES -->
+      <div class="inv-pane" id="inv-consumables">
+        <input class="inv-search" placeholder="Buscar consumibles..." oninput="filterCards(this,'inv-consumables')"/>
+        <div class="inv-grid">
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="2.2"/><circle cx="16" cy="8" r="2.2"/><circle cx="8" cy="16" r="2.2"/><circle cx="16" cy="16" r="2.2"/></svg></div><span class="inv-card-name">Placas de 6 pocillos</span></div><div class="inv-card-body">Corning 3506 · TC-treated · ~120 placas</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="7" cy="7" r="1.2" fill="var(--green-bright)"/><circle cx="12" cy="7" r="1.2" fill="var(--green-bright)"/><circle cx="17" cy="7" r="1.2" fill="var(--green-bright)"/><circle cx="7" cy="12" r="1.2" fill="var(--green-bright)"/><circle cx="12" cy="12" r="1.2" fill="var(--green-bright)"/><circle cx="17" cy="12" r="1.2" fill="var(--green-bright)"/><circle cx="7" cy="17" r="1.2" fill="var(--green-bright)"/><circle cx="12" cy="17" r="1.2" fill="var(--green-bright)"/><circle cx="17" cy="17" r="1.2" fill="var(--green-bright)"/></svg></div><span class="inv-card-name">Placas de 96 pocillos</span></div><div class="inv-card-body">Corning 3595 · Fondo plano · ~80 placas</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-low"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v8l2.5 4H7.5L10 10V2z"/><path d="M7.5 14h9"/><path d="M8 18h8a1 1 0 0 1 0 4H8a1 1 0 0 1 0-4z"/></svg></div><span class="inv-card-name">Microtubes 1.5 mL</span></div><div class="inv-card-body">Eppendorf LoBind · ⚠ ~50 restantes — reponer pronto</div></div>
+          <div class="inv-card"><button class="inv-card-del" onclick="deleteInvCard(this)" title="Eliminar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="inv-status s-ok"></div><div class="inv-card-header"><div class="inv-card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8c6 0 6 4 12 4s6-4 12-4" transform="scale(0.75) translate(4,0)"/><path d="M3 14c6 0 6 4 12 4s6-4 12-4" transform="scale(0.75) translate(4,0)"/><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 9h20"/><path d="M2 14h20"/></svg></div><span class="inv-card-name">Membrana PVDF</span></div><div class="inv-card-body">Millipore Immobilon-P · 0.45 µm · 2 rollos</div></div>
+        </div>
+        <button class="inv-add-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar consumible</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-note"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>3 ítems</span> necesitan atención · Última sincronización: hoy</div>
+      <button class="btn-primary" onclick="applyInventory()">Aplicar a la sesión</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PROJECT MODAL -->
+<div class="modal-backdrop" id="np-modal">
+  <div class="np-modal">
+    <div class="np-header">
+      <h3>Nuevo proyecto</h3>
+      <button class="modal-close" onclick="closeNewProject()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="np-body">
+      <div class="np-field"><label>Nombre del proyecto</label><input type="text" class="np-input" id="np-name" placeholder="ej. Fosforilación de Tau en modelos de EA"/></div>
+      <div class="np-field"><label>Descripción (opcional)</label><input type="text" class="np-input" id="np-desc" placeholder="Descripción breve de los objetivos"/></div>
+      <div class="np-field">
+        <label>Visibilidad</label>
+        <div class="np-vis">
+          <div class="vis-opt" onclick="setNPVis(this)">
+            <div class="vis-opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="vis-lbl">Compartido</div><div class="vis-desc">Visible para todos los miembros</div>
+          </div>
+          <div class="vis-opt active" onclick="setNPVis(this)">
+            <div class="vis-opt-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="vis-lbl">Privado</div><div class="vis-desc">Solo vos podés verlo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="np-footer">
+      <button class="btn-ghost" onclick="closeNewProject()">Cancelar</button>
+      <button class="btn-primary" onclick="createProject()">Crear proyecto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ───────────────────────────────────────────────────────────
+const PROJECTS = {
+  neuro:{name:'Modelos neurodegenerativos',desc:'Modelos celulares y de ratón para enfermedades de Parkinson y Alzheimer',shared:true,updated:'hoy',members:4,
+    chats:[
+      {title:'RT-qPCR primers — TP53, MDM2, CDKN1A',meta:'Hoy · Diseño de primers',av:'MP',bg:'#2d5a1e',col:'#97C459'},
+      {title:'Transducción lentiviral de neuronas iPSC',meta:'Ayer · Protocolo de cultivo',av:'LR',bg:'#1c2a1f',col:'#8aaa70'},
+      {title:'Inmunofluorescencia α-synuclein — troubleshoot',meta:'Hace 3 días · Troubleshooting',av:'MP',bg:'#2d5a1e',col:'#97C459'},
+      {title:'Thioflavin T assay — optimización de concentración',meta:'Hace 1 semana · Experimental design',av:'SC',bg:'#1c2a1f',col:'#8aaa70'},
+    ],
+    papers:[
+      {type:'paper',title:'Targeting α-synuclein aggregation with small molecules',meta:'Fusco et al., 2023 · Nat Chem Biol · MP'},
+      {type:'paper',title:'iPSC-derived dopaminergic neurons in Parkinson\'s disease',meta:'Mazzulli et al., 2022 · Cell Stem Cell · LR'},
+      {type:'uploaded',title:'Revisión interna: modelos ND Q3 2024',meta:'Subido por MP · Jun 2024 · 18 pp'},
+    ],
+    protocols:[
+      {type:'protocol',title:'IF para α-syn en SH-SY5Y',meta:'scAIence · Jun 12 · 8 pasos · MP'},
+      {type:'protocol',title:'Transducción lentiviral iPSC a MOI 5',meta:'scAIence · Jun 8 · 12 pasos · LR'},
+      {type:'uploaded',title:'Thioflavin T assay — SOP ORT v2.1',meta:'Subido por JM · May 2024 · 4 pp'},
+      {type:'uploaded',title:'Disección de tejido cerebral de ratón',meta:'Subido por MP · Abr 2024 · 6 pp'},
+    ]
+  },
+  tumor:{name:'Tumor microenvironment',desc:'Estudio de interacciones entre células tumorales e inmunes en el microambiente tumoral',shared:false,updated:'hace 6 días',members:2,
+    chats:[
+      {title:'Panel flow — marcadores de agotamiento T',meta:'Hace 1 semana · Flow cytometry',av:'MP',bg:'#2d5a1e',col:'#97C459'},
+      {title:'Co-cultivo tumor / PBMC — protocolo',meta:'Hace 2 semanas · Protocolo',av:'MP',bg:'#2d5a1e',col:'#97C459'},
+    ],
+    papers:[{type:'paper',title:'PD-L1 expression in solid tumors and response to checkpoint blockade',meta:'Herbst et al., 2022 · Nature · MP'}],
+    protocols:[{type:'uploaded',title:'Aislamiento de PBMC de sangre periférica SOP',meta:'Subido por MP · Mar 2024'}]
+  },
+  crispr:{name:'CRISPR base editing',desc:'Estrategias de base editing para corrección de mutaciones puntuales en líneas celulares',shared:true,updated:'hace 8 días',members:3,
+    chats:[
+      {title:'sgRNA design para BRCA1 exón 11',meta:'Ayer · CRISPR',av:'JM',bg:'#1c2a1f',col:'#8aaa70'},
+      {title:'ABE vs CBE para corrección de SNP',meta:'Hace 4 días · Experimental design',av:'MP',bg:'#2d5a1e',col:'#97C459'},
+    ],
+    papers:[
+      {type:'paper',title:'Programmable base editing of A·T to G·C in genomic DNA',meta:'Gaudelli et al., 2017 · Nature · JM'},
+      {type:'paper',title:'Adenine base editors with enhanced activity in mitochondrial DNA',meta:'Wei et al., 2022 · Nat Biotechnol · MP'},
+    ],
+    protocols:[
+      {type:'protocol',title:'Transfección de ABE en HEK293T con Lipofectamine 3000',meta:'scAIence · Jun 5 · 10 pasos'},
+      {type:'uploaded',title:'ICE analysis workflow — SOP v1.0',meta:'Subido por JM · May 2024'},
+    ]
+  },
+  scrna:{name:'Single-cell RNA-seq',desc:'Análisis de transcriptómica de células individuales en modelos tumorales',shared:false,updated:'hace 6 días',members:1,
+    chats:[{title:'Pre-procesamiento de datos scRNA-seq con Seurat',meta:'Hace 2 semanas · Análisis',av:'MP',bg:'#2d5a1e',col:'#97C459'}],
+    papers:[{type:'paper',title:'Comprehensive Integration of Single-Cell Data',meta:'Stuart et al., 2019 · Cell · MP'}],
+    protocols:[{type:'uploaded',title:'10x Genomics Chromium Single Cell — SOP',meta:'Subido por MP · Feb 2024 · 12 pp'}]
+  },
+  prot:{name:'Structural proteomics',desc:'Análisis de estructura proteica y complejos mediante cryo-EM y SEC-MS',shared:true,updated:'hace 6 días',members:4,
+    chats:[{title:'Sample prep para cryo-EM — proteína recombinante',meta:'Hace 3 días · Protocolo',av:'SC',bg:'#1c2a1f',col:'#8aaa70'}],
+    papers:[{type:'paper',title:'Structure of the human ribosome at 2.1 Å resolution',meta:'Natchiar et al., 2021 · Nature · SC'}],
+    protocols:[{type:'protocol',title:'Purificación de complejo proteico por SEC',meta:'scAIence · Jun 10 · 9 pasos'}]
+  }
+};
+
+let currentProj = 'neuro';
+let inChat = false;
+
+// ── VIEWS ──────────────────────────────────────────────────────────
+function showView(v) {
+  document.getElementById('view-projects').classList.remove('active');
+  document.getElementById('view-pd').classList.remove('active');
+  document.getElementById('view-welcome').style.display = 'none';
+  document.getElementById('chat-state').classList.remove('active');
+
+  if (v === 'projects') {
+    document.getElementById('view-projects').classList.add('active');
+    renderGrid();
+  } else if (v === 'project-detail') {
+    document.getElementById('view-pd').classList.add('active');
+    renderDetail(currentProj);
+  } else { // welcome / chat
+    if (inChat) {
+      document.getElementById('chat-state').classList.add('active');
+    } else {
+      document.getElementById('view-welcome').style.display = '';
+    }
+  }
+}
+
+// ── PROJECTS GRID ──────────────────────────────────────────────────
+function renderGrid() {
+  const grid = document.getElementById('pv-grid');
+  const keys = Object.keys(PROJECTS);
+  let html = keys.map((k, i) => {
+    const p = PROJECTS[k];
+    return `<div class="pc" style="animation-delay:${i*0.04}s" onclick="openProject('${k}')">
+      <div class="pc-top">
+        <div class="pc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg></div>
+        <div class="pc-badges">
+          ${p.shared ? '<span class="pbadge badge-shared">compartido</span>' : '<span class="pbadge badge-private">privado</span>'}
+          ${k==='neuro' ? '<span class="pbadge badge-active">activo</span>' : ''}
+        </div>
+      </div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-desc">${p.desc}</div>
+      <div class="pc-footer">
+        <div class="pc-stat"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Act. ${p.updated}</div>
+        <div class="pc-stat"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${p.chats.length} chats</div>
+        <div class="pc-stat"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${p.members}</div>
+      </div>
+    </div>`;
+  }).join('');
+  html += `<div class="pc pc-new" onclick="openNewProject()">
+    <div class="pc-new-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+    <span>Nuevo proyecto</span>
+  </div>`;
+  grid.innerHTML = html;
+}
+
+function filterProjects(q) {
+  const cards = document.querySelectorAll('#pv-grid .pc:not(.pc-new)');
+  const keys = Object.keys(PROJECTS);
+  q = q.toLowerCase();
+  cards.forEach((c, i) => {
+    const p = PROJECTS[keys[i]];
+    c.style.display = (p.name + p.desc).toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── PROJECT DETAIL ──────────────────────────────────────────────────
+function openProject(key) {
+  currentProj = key;
+  document.querySelectorAll('.project-item').forEach(el => el.classList.remove('active'));
+  const sb = document.getElementById('sb-' + key);
+  if (sb) sb.classList.add('active');
+  showView('project-detail');
+}
+
+function renderDetail(key) {
+  const p = PROJECTS[key];
+  document.getElementById('pd-name').textContent = p.name;
+  document.getElementById('pd-updated').textContent = 'Actualizado ' + p.updated;
+  document.getElementById('pd-members').textContent = p.members + ' miembro' + (p.members !== 1 ? 's' : '');
+  document.getElementById('pd-vis-txt').textContent = p.shared ? 'Compartido' : 'Privado';
+
+  // chats
+  document.getElementById('pd-chats-count').textContent = p.chats.length + ' conversacion' + (p.chats.length !== 1 ? 'es' : '');
+  document.getElementById('pd-chats-body').innerHTML = p.chats.map(c => `
+    <div class="ps-item" onclick="startChatFromProject()">
+      <div class="ps-av" style="background:${c.bg};color:${c.col}">${c.av}</div>
+      <div class="ps-item-body"><div class="ps-item-title">${c.title}</div><div class="ps-item-meta">${c.meta}</div></div>
+    </div>`).join('');
+
+  // papers
+  document.getElementById('pd-papers-count').textContent = p.papers.length + ' paper' + (p.papers.length !== 1 ? 's' : '');
+  document.getElementById('pd-papers-body').innerHTML = p.papers.length ? p.papers.map(r => `
+    <div class="ps-item">
+      <div class="ps-item-icon" style="background:rgba(99,153,34,.08);border:1px solid var(--border)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="ps-item-body"><div class="ps-item-title">${r.title}</div><div class="ps-item-meta">${r.meta}</div></div>
+      <span class="ps-type ${r.type==='paper'?'tp-paper':'tp-up'}">${r.type==='paper'?'PubMed':'PDF'}</span>
+    </div>`).join('') :
+    '<div class="ps-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.25"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Sin papers aún<button class="ps-empty-btn">+ Agregar paper</button></div>';
+
+  // protocols
+  document.getElementById('pd-proto-count').textContent = p.protocols.length + ' protocolo' + (p.protocols.length !== 1 ? 's' : '');
+  document.getElementById('pd-proto-body').innerHTML = p.protocols.length ? p.protocols.map(r => `
+    <div class="ps-item">
+      <div class="ps-item-icon" style="background:rgba(201,162,39,.08);border:1px solid var(--border)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 9H8L9 3z"/><path d="M8 12c-2 2-3 4-2 7a4 4 0 0 0 4 2h4a4 4 0 0 0 4-2c1-3 0-5-2-7"/></svg></div>
+      <div class="ps-item-body"><div class="ps-item-title">${r.title}</div><div class="ps-item-meta">${r.meta}</div></div>
+      <span class="ps-type ${r.type==='protocol'?'tp-proto':'tp-up'}">${r.type==='protocol'?'scAIence':'Subido'}</span>
+    </div>`).join('') :
+    '<div class="ps-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.25"><path d="M9 3h6l1 9H8L9 3z"/></svg>Sin protocolos aún<button class="ps-empty-btn">+ Subir protocolo</button></div>';
+}
+
+function startChatFromProject() { showView('welcome'); }
+function openPanelFor() {
+  document.getElementById('panel-proj-name').textContent = PROJECTS[currentProj].name;
+  document.getElementById('project-panel').classList.remove('collapsed');
+}
+
+// ── THEME TOGGLE ────────────────────────────────────────────────────
+function initTheme(){
+  const saved=localStorage.getItem('scaience-theme')||'dark';
+  applyTheme(saved);
+}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('scaience-theme',t);
+  document.getElementById('theme-icon-sun').style.display=t==='light'?'block':'none';
+  document.getElementById('theme-icon-moon').style.display=t==='dark'?'block':'none';
+}
+function toggleTheme(){
+  const current=document.documentElement.getAttribute('data-theme')||'dark';
+  applyTheme(current==='dark'?'light':'dark');
+}
+initTheme();
+
+// ── SIDEBAR & PANEL ────────────────────────────────────────────────
+const sidebar = document.getElementById('sidebar');
+const sbOverlay = document.getElementById('sidebar-overlay');
+function toggleSidebar(){sidebar.classList.contains('open')?closeSidebar():openSidebar()}
+function openSidebar(){sidebar.classList.add('open');sbOverlay.classList.add('open')}
+function closeSidebar(){sidebar.classList.remove('open');sbOverlay.classList.remove('open')}
+function closePanel(){document.getElementById('project-panel').classList.add('collapsed')}
+function switchPanelTab(id,el){
+  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel-tab-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-'+id).classList.add('active');
+}
+function setVis(el){el.closest('.share-toggle').querySelectorAll('.share-opt').forEach(o=>o.classList.remove('active'));el.classList.add('active')}
+
+// ── INVENTORY ──────────────────────────────────────────────────────
+function openInventory(){document.getElementById('inv-modal').classList.add('open')}
+function openConnectors(){document.getElementById('conn-modal').classList.add('open')}
+function closeConnectors(){document.getElementById('conn-modal').classList.remove('open')}
+function connectTool(btn, name){
+  btn.textContent='Conectando…';btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent='Abrir';btn.classList.remove('connect');btn.classList.add('open');btn.disabled=false;
+    btn.onclick=()=>alert('Abriendo '+name+'…');
+    const statusEl=btn.closest('.conn-card').querySelector('.conn-status');
+    statusEl.className='conn-status connected';statusEl.textContent='Conectado';
+    // update counter badge
+    const badges=document.querySelectorAll('.connectors-btn span');
+    if(badges.length){const n=parseInt(badges[0].textContent)||3;badges[0].textContent=(n+1)+' activos';}
+  },900);
+}
+document.getElementById('conn-modal').addEventListener('click',e=>{if(e.target===document.getElementById('conn-modal'))closeConnectors()});
+function closeInventory(){document.getElementById('inv-modal').classList.remove('open')}
+function switchInvTab(id,el){
+  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.inv-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('inv-'+id).classList.add('active');
+}
+function applyInventory(){closeInventory();document.getElementById('inv-ctx-bar').classList.add('visible')}
+function filterCards(inp,id){
+  const q=inp.value.toLowerCase();
+  document.querySelectorAll('#'+id+' .inv-card').forEach(c=>c.style.display=c.textContent.toLowerCase().includes(q)?'':'none');
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  if(e.dataTransfer.files.length) simulateUpload(e.dataTransfer.files[0].name);
+}
+function handleFile(e){if(e.target.files.length)simulateUpload(e.target.files[0].name)}
+function simulateUpload(fname){
+  const prog=document.getElementById('upload-progress');
+  const fill=document.getElementById('prog-fill');
+  document.getElementById('prog-text').textContent='Procesando '+fname+'...';
+  fill.style.animation='none';fill.offsetHeight;fill.style.animation='';
+  prog.classList.add('visible');
+  setTimeout(()=>{
+    prog.classList.remove('visible');
+    // switch to equipment tab
+    document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.inv-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.modal-tab')[1].classList.add('active');
+    document.getElementById('inv-equip').classList.add('active');
+    // success banner
+    const b=document.createElement('div');
+    b.style.cssText='background:rgba(99,153,34,.12);border:1px solid rgba(99,153,34,.3);border-radius:9px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:var(--green-bright);display:flex;align-items:center;gap:10px';
+    b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Inventario importado desde <strong>'+fname+'</strong>: 8 equipos, 6 reactivos y 4 consumibles detectados.';
+    document.getElementById('inv-equip').insertBefore(b,document.getElementById('inv-equip').firstChild);
+    setTimeout(()=>b.remove(),5000);
+  },2200);
+}
+
+// ── NEW PROJECT ────────────────────────────────────────────────────
+function openNewProject(){document.getElementById('np-modal').classList.add('open')}
+function closeNewProject(){document.getElementById('np-modal').classList.remove('open');document.getElementById('np-name').value='';document.getElementById('np-desc').value=''}
+function setNPVis(el){el.closest('.np-vis').querySelectorAll('.vis-opt').forEach(o=>o.classList.remove('active'));el.classList.add('active')}
+function createProject(){
+  const name=document.getElementById('np-name').value.trim();
+  if(!name){document.getElementById('np-name').focus();return}
+  const shared=document.querySelector('.vis-opt.active .vis-lbl').textContent.includes('Compartido');
+  const key='p_'+Date.now();
+  PROJECTS[key]={name,desc:document.getElementById('np-desc').value||'Sin descripción',shared,updated:'ahora',members:1,chats:[],papers:[],protocols:[]};
+  closeNewProject();
+  const sc=document.querySelector('.sidebar .sidebar-section');
+  const el=document.createElement('div');
+  el.className='project-item';el.id='sb-'+key;
+  el.innerHTML=`<svg class="project-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg><span class="project-name">${name}</span><div class="project-badges"><span class="pbadge ${shared?'badge-shared':'badge-private'}">${shared?'comp.':'privado'}</span></div>`;
+  el.onclick=()=>openProject(key);
+  sc.appendChild(el);
+  openProject(key);
+}
+
+// ── CHAT ────────────────────────────────────────────────────────────
+const textarea=document.getElementById('chat-input');
+const sendBtn=document.getElementById('send-btn');
+const messagesEl=document.getElementById('messages');
+textarea.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'});
+textarea.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+function fillPrompt(t){textarea.value=t;textarea.focus();textarea.style.height='auto';textarea.style.height=textarea.scrollHeight+'px'}
+
+function showChatState(){
+  document.getElementById('view-welcome').style.display='none';
+  document.getElementById('view-projects').classList.remove('active');
+  document.getElementById('view-pd').classList.remove('active');
+  document.getElementById('chat-state').classList.add('active');
+  inChat=true;
+}
+function goHome(){
+  inChat=false;
+  messagesEl.innerHTML='';
+  document.querySelectorAll('.chat-item').forEach(c=>c.classList.remove('active'));
+  showView('welcome');
+}
+function addMessage(role,html){
+  const isAI=role==='ai';
+  const d=document.createElement('div');d.className='msg';
+  d.innerHTML=`<div class="msg-avatar ${isAI?'ai':'user'}">${isAI?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg>':'MP'}</div>
+  <div class="msg-content"><div class="msg-name ${isAI?'ai-name':''}">${isAI?'scAIence':'Vos'}</div><div class="msg-bubble ${isAI?'':'user-bubble'}">${html}</div></div>`;
+  messagesEl.appendChild(d);document.getElementById('chat-state').scrollTop=9999;
+}
+function addTyping(){
+  const d=document.createElement('div');d.className='msg';d.id='typmsg';
+  d.innerHTML=`<div class="msg-avatar ai"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/></svg></div>
+  <div class="msg-content"><div class="msg-name ai-name">scAIence</div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+  messagesEl.appendChild(d);document.getElementById('chat-state').scrollTop=9999;
+}
+function removeTyping(){const t=document.getElementById('typmsg');if(t)t.remove()}
+
+const aiR={
+  crispr:`<p>Antes de diseñar el protocolo, necesito algunos detalles para adaptarlo a tu setup.</p><div class="q-list"><div class="q-list-title">⟶ Preguntas de clarificación</div><div class="q-item"><span class="q-num">01</span><span><strong>Línea celular:</strong> ¿Con qué línea trabajás? ¿Adherente o en suspensión?</span></div><div class="q-item"><span class="q-num">02</span><span><strong>Entrega:</strong> El Lonza Nucleofector está en reparación — ¿usamos <strong>Lipofectamine 3000</strong> (en stock)?</span></div><div class="q-item"><span class="q-num">03</span><span><strong>Selección:</strong> La puromicina está sin stock (~1 semana). ¿Cell sorting o clonación?</span></div><div class="q-item"><span class="q-num">04</span><span><strong>Validación:</strong> ¿Surveyor, Sanger/ICE o Western blot?</span></div></div>`,
+  primer:`<p>Diseño los primers para tus targets. Antes de correr el pipeline, confirmo algunos datos.</p><div class="q-list"><div class="q-list-title">⟶ Preguntas de clarificación</div><div class="q-item"><span class="q-num">01</span><span><strong>Especie:</strong> ¿Secuencias humanas? Uso NCBI RefSeq hg38.</span></div><div class="q-item"><span class="q-num">02</span><span><strong>Aplicación:</strong> ¿RT-qPCR (expresión) o gDNA?</span></div><div class="q-item"><span class="q-num">03</span><span><strong>Master mix:</strong> Hay <strong>Bio-Rad iTaq SYBR Green</strong> en stock — optimizo Tm para SYBR (58-62°C). ¿OK?</span></div><div class="q-item"><span class="q-num">04</span><span><strong>Nota:</strong> CFX96 tiene servicio programado el 20 Jun. Tené esto en cuenta.</span></div></div>`,
+  western:`<p>Vamos a diagnósticarlo sistemáticamente, cruzando con tu inventario.</p><div class="q-list"><div class="q-list-title">⟶ Preguntas de clarificación</div><div class="q-item"><span class="q-num">01</span><span><strong>Tipo de background:</strong> ¿Difuso en toda la membrana o concentrado?</span></div><div class="q-item"><span class="q-num">02</span><span><strong>Anticuerpo:</strong> ¿Cuál es el primario? Lo cruzo con tu inventario.</span></div><div class="q-item"><span class="q-num">03</span><span><strong>Bloqueo:</strong> ¿BSA o leche? Los Ab fosfoespecíficos nunca van con leche.</span></div><div class="q-item"><span class="q-num">04</span><span><strong>Lavados:</strong> ¿Cuántos, con TBS-T o PBS-T?</span></div></div>`,
+  calc:`<p>Acá está el cálculo completo para tu transducción:</p><ul><li><strong>TU requeridas:</strong> 500.000 × MOI 5 = <code>2.5 × 10⁶ TU</code></li><li><strong>Volumen viral:</strong> 2.5×10⁶ ÷ 1×10⁸ TU/mL = <code>25 µL</code></li><li><strong>Polybrene:</strong> Concentración final <code>8 µg/mL</code></li><li><strong>Volumen total:</strong> 25 µL virus + 475 µL medio + polybrene por pocillo de placa 24.</li><li><strong>⚠ Selección:</strong> La puromicina está <strong>sin stock</strong>. Hacé el pedido ahora (ETA ~1 semana).</li></ul>`,
+  generic:`<p>Entendido. Antes de responder necesito algunos detalles — también reviso tu inventario para adaptar la respuesta a tu lab.</p><div class="q-list"><div class="q-list-title">⟶ Preguntas de clarificación</div><div class="q-item"><span class="q-num">01</span><span><strong>Sistema:</strong> ¿Con qué célula u organismo trabajás?</span></div><div class="q-item"><span class="q-num">02</span><span><strong>Punto de partida:</strong> ¿De cero o adaptando un método existente?</span></div><div class="q-item"><span class="q-num">03</span><span><strong>Objetivo:</strong> ¿Cuál es el endpoint o readout experimental?</span></div></div>`
+};
+function getR(t){
+  t=t.toLowerCase();
+  if(t.includes('crispr')||t.includes('knockout')||t.includes('sgrna'))return aiR.crispr;
+  if(t.includes('primer')||t.includes('qpcr')||t.includes('pcr'))return aiR.primer;
+  if(t.includes('troubleshoot')||t.includes('background')||t.includes('western'))return aiR.western;
+  if(t.includes('calcul')||t.includes('moi')||t.includes('lentiviral'))return aiR.calc;
+  return aiR.generic;
+}
+function sendMessage(){
+  const txt=textarea.value.trim();if(!txt)return;
+  showChatState();addMessage('user',txt);
+  textarea.value='';textarea.style.height='auto';
+  addTyping();sendBtn.disabled=true;
+  setTimeout(()=>{removeTyping();addMessage('ai',getR(txt));sendBtn.disabled=false;document.getElementById('chat-state').scrollTop=9999},1400+Math.random()*600);
+}
+function startChat(t){textarea.value=t;sendMessage()}
+
+function loadChat(el,type){
+  document.querySelectorAll('.chat-item').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');showChatState();messagesEl.innerHTML='';
+  const d={
+    pcr:[{role:'user',html:'RT-qPCR primers para TP53, MDM2 y CDKN1A en HCT116.'},{role:'ai',html:aiR.primer}],
+    crispr_c:[{role:'user',html:'sgRNA design para knockout de BRCA1 exón 11 en MCF-7.'},{role:'ai',html:aiR.crispr}],
+    western:[{role:'user',html:'Western blot para phospho-ERK tiene background difuso y smear en 44/42 kDa.'},{role:'ai',html:aiR.western}],
+    calc:[{role:'user',html:'MOI lentiviral para 500.000 HEK293T. Titer: 1×10⁸ TU/mL.'},{role:'ai',html:aiR.calc}]
+  };
+  (d[type]||d.pcr).forEach(m=>addMessage(m.role,m.html));
+  document.getElementById('chat-state').scrollTop=9999;
+}
+
+// close on backdrop
+document.getElementById('inv-modal').addEventListener('click',e=>{if(e.target===document.getElementById('inv-modal'))closeInventory()});
+document.getElementById('np-modal').addEventListener('click',e=>{if(e.target===document.getElementById('np-modal'))closeNewProject()});
+
+function deleteInvCard(btn){
+  const card=btn.closest('.inv-card');
+  const name=card.querySelector('.inv-card-name')?.textContent||'este ítem';
+  if(!confirm(`¿Eliminar "${name}" del inventario?`))return;
+  card.style.transition='opacity .2s,transform .2s';
+  card.style.opacity='0';card.style.transform='scale(.95)';
+  setTimeout(()=>card.remove(),200);
+}
+
+// init
+showView('welcome');
+</script>
+</body>
+</html>
